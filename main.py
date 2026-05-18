@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 import funciones
 import pickle
 
@@ -17,7 +18,49 @@ lugaresDonacion = {
 }
 archivoDonadores = "datos/donadores.pkl"
 donadores = [] 
+def InsertarDonador(ventanaPadre, donadores):
+    ventana = tk.Toplevel(ventanaPadre)
+    ventana.title("Insertar Donador")
+    ventana.geometry("400x500")
+    #Cédula
+    tk.Label(ventana, text="Cédula:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+    entryCedula = tk.Entry(ventana, width=30)
+    entryCedula.grid(row=0, column=1, padx=10, pady=5)
+    #Nombre
+    tk.Label(ventana, text="Nombre Completo:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
+    entryNombre = tk.Entry(ventana, width=30)
+    entryNombre.grid(row=1, column=1, padx=10, pady=5)
+    #Fecha de nacimiento
+    tk.Label(ventana, text="Fecha de nacimiento (DD/MM/AAAA):").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+    entryFecha = tk.Entry(ventana, width=30)
+    entryFecha.grid(row=2, column=1, padx=10, pady=5)
+    #Tipo de sangre
+    tk.Label(ventana, text="Tipo de sangre:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+    tipoSangreVar = tk.StringVar(value=tiposSangre[0])
+    comboTipoSangre = tk.OptionMenu(ventana, tipoSangreVar, *tiposSangre)
+    comboTipoSangre.grid(row=3, column=1, padx=10, pady=5)
+    #Sexo
+    tk.Label(ventana, text="Sexo:").grid(row=4, column=0, padx=10, pady=5, sticky="w")
+    sexoVar = tk.BooleanVar(value=True)
+    tk.Radiobutton(ventana, text="Masculino", variable=sexoVar, value=True).grid(row=4, column=1, sticky="w")
+    tk.Radiobutton(ventana, text="Femenino", variable=sexoVar, value=False).grid(row=5, column=1, sticky="w")
+    #Peso
+    tk.Label(ventana, text="Peso (kg):").grid(row=6, column=0, padx=10, pady=5, sticky="w")
+    entryPeso = tk.Entry(ventana, width=30)
+    entryPeso.grid(row=6, column=1, padx=10, pady=5)
+    #Teléfono
+    tk.Label(ventana, text="Teléfono:").grid(row=7, column=0, padx=10, pady=5, sticky="w")
+    entryTelefono = tk.Entry(ventana, width=30)
+    entryTelefono.grid(row=7, column=1, padx=10, pady=5)
+    #Correo
+    tk.Label(ventana, text="Correo:").grid(row=8, column=0, padx=10, pady=5, sticky="w")
+    entryCorreo = tk.Entry(ventana, width=30)
+    entryCorreo.grid(row=8, column=1, padx=10, pady=5)
 
+    #Botones
+    tk.Button(ventana, text="Registrar", width=12).grid(row=9, column=0, padx=10, pady=15)
+    tk.Button(ventana, text="Limpiar",   width=12).grid(row=9, column=1, padx=10, pady=15)
+    tk.Button(ventana, text="Regresar",  width=12, command=ventana.destroy).grid(row=9, column=2, padx=10, pady=15)
 def ventanaPrincipal():
     donadores = funciones.cargarDonadores()
     
@@ -27,7 +70,7 @@ def ventanaPrincipal():
 
     tk.Label(ventana, text="Sistema de Donación de Sangre", font=("Arial", 12, "bold")).pack(pady=10)
 
-    tk.Button(ventana, text="1. Insertar donador",              width=30).pack(pady=5)
+    tk.Button(ventana, text="1. Insertar donador", width=30, command=lambda: ventanaInsertarDonador(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="2. Generar donadores",             width=30).pack(pady=5)
     tk.Button(ventana, text="3. Actualizar datos del donador",  width=30).pack(pady=5)
     tk.Button(ventana, text="4. Eliminar donador",              width=30).pack(pady=5)
