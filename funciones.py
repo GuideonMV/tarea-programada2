@@ -81,3 +81,24 @@ def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2
     
     donadores.append(nuevoDonador)
     return donadores
+
+def validarNombre(nombre):
+    partes = nombre.strip().split()
+    return len(partes) >= 3
+
+def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
+    if not validarCedula(cedula):
+        return "Cédula inválida. Formato: #-####-####"
+    if not validarNombre(nombre):
+        return "Ingrese nombre y dos apellidos"
+    if not validarFecha(fecha):
+        return "Fecha inválida. Formato: DD/MM/AAAA"
+    if not validarTelefono(telefono):
+        return "Teléfono inválido. Formato: ####-####"
+    if not validarCorreo(correo):
+        return "Correo inválido"
+    if not validarPeso(peso):
+        return "Peso inválido. Debe ser mayor a 50 y menor a 120"
+    if cedulaExiste(cedula, donadores):
+        return "Esta cédula ya está registrada"
+    return None
