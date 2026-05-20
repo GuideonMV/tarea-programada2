@@ -62,4 +62,22 @@ def cedulaExiste(cedula, donadores):
             return True
     return False
 
-
+def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2, tipoSangre, sexo, dia, mes, anno, peso, correo, telefono):
+    
+    indiceTipo = tiposSangre.index(tipoSangre)
+    
+    nuevoDonador = [
+        [nombre, apellido1, apellido2],
+        cedula,                         
+        indiceTipo,                      
+        sexo,                            
+        (dia, mes, anno),                
+        float(peso),                     
+        correo,                          
+        telefono,                        
+        1,                               
+        0                                
+    ]
+    
+    donadores.append(nuevoDonador)
+    return donadores
