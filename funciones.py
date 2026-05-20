@@ -2,10 +2,9 @@ import pickle
 import re
 from datetime import date
 import random
-
 #Datos aleatorios
 archivoDonadores = "datos/donadores.pkl"
-nombresAleatorios = ["Carlos", "Juan", "María", "Ana", "Luis", "Laura", "Pedro", "Sofía", "Diego", "Valeria"]
+nombresAleatorios = ["Ana", "Luis", "María", "Carlos", "Sofía", "Jorge", "Lucía", "Miguel", "Valeria", "Diego"]
 apellidosAleatorios = ["González", "Rodríguez", "López", "Martínez", "Pérez", "Sánchez", "Ramírez", "Torres", "Flores", "Rivera"]
 correosAleatorios = ["gmail.com", "costarricense.cr", "racsa.go.cr", "ccss.sa.cr"]
 
@@ -81,7 +80,6 @@ def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2
     
     donadores.append(nuevoDonador)
     return donadores
-
 def validarNombre(nombre):
     partes = nombre.strip().split()
     return len(partes) >= 3
@@ -102,3 +100,60 @@ def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
     if cedulaExiste(cedula, donadores):
         return "Esta cédula ya está registrada"
     return None
+
+def mensajeEdad(fecha):
+    hoy = date.today()
+    dia, mes, anno = fecha
+    edad = (hoy - date(anno, mes, dia)).days // 365
+    if edad >= 18:
+        return "Dado su fecha de nacimiento usted ya puede ser donador"
+    return "Dado su fecha de nacimiento usted aún no puede ser donador"
+
+def mensajeProvincia(cedula, lugaresDonacion):
+    nombresProvincias = {
+        "1": "San José", "2": "Alajuela", "3": "Cartago",
+        "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
+    }
+    provincia = cedula[0] if cedula[0] != "8" else "1"
+    lugares = lugaresDonacion.get(provincia, [])
+    nombreProvincia = nombresProvincias.get(provincia, "desconocida")
+    return f"Dado que usted nació en la provincia de: {nombreProvincia}, usted podría donar en: {', '.join(lugares)}."
+
+def mensajePeso(peso):
+    peso = float(peso)
+    if peso <= 50:
+        return "Usted debe pesar más de 50 kgms para poder ser donador"
+    elif peso >= 120:
+        return "Dado su sobre peso, no es posible donar sangre"
+    return "Usted posee un peso adecuado, correcto para ser donador de sangre"
+
+def mensajeTipoSangre(tipoSangre):
+    infoSangre = {
+        "A+": "Se recomienda donar sangre entera y plaquetas.",
+        "A-": "Se recomienda donar sangre entera y glóbulos rojos dobles.",
+        "B+": "Se recomienda donar sangre entera y glóbulos rojos dobles.",
+        "B-": "Se recomienda donar sangre entera o plaquetas.",
+        "O+": "Se recomienda donar glóbulos rojos dobles y sangre entera.",
+        "O-": "Se recomienda donar glóbulos rojos dobles y sangre entera.",
+        "AB+": "Se recomienda hacer donaciones de plaquetas y plasma.",
+        "AB-": "Se recomienda donar plaquetas y plasma."
+    }
+    return f"Dado su tipo de sangre {tipoSangre}: {infoSangre[tipoSangre]}"
+
+def mensajeVideoSangreA(tipoSangre):
+    if tipoSangre in ("A+", "A-"):
+        return "Recomendación: vea el video 'Particularidades de la sangre tipo A: Responde diferente al estrés según la ciencia'."
+    return None
+
+def obtenerRealimentacion(cedula, fecha, peso, tipoSangre, lugaresDonacion):
+    mensajes = [
+        mensajeEdad(fecha),
+        mensajeProvincia(cedula, lugaresDonacion),
+        mensajePeso(peso),
+        mensajeTipoSangre(tipoSangre),
+    ]
+    video = mensajeVideoSangreA(tipoSangre)
+    if video:
+        mensajes.append(video)
+    return mensajes
+
