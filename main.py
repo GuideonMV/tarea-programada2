@@ -17,16 +17,16 @@ lugaresDonacion = {
     "8": []
 }
 archivoDonadores = "datos/donadores.pkl"
-donadores = [] 
+donadores = []
 
 def salir(ventana):
     messagebox.showinfo("Salir", "Donar sangre, es donar vida") #Muestra este mensaje cuando se selecciona salir. El primer parámetro es el nombre de la mini ventana
     ventana.destroy() #Se cierra la ventana
-    
 
-    
 def limpiarCampos(entryCedula, entryNombre, entryFecha, entryPeso, entryTelefono, entryCorreo):
-    entryCedula.delete(0, tk.END) 
+    #Borra el contenido de los espacios
+    #Desde la posición 0 hasta el último carácter (tk.END)
+    entryCedula.delete(0, tk.END)
     entryNombre.delete(0, tk.END)
     entryFecha.delete(0, tk.END)
     entryPeso.delete(0, tk.END)
@@ -34,26 +34,33 @@ def limpiarCampos(entryCedula, entryNombre, entryFecha, entryPeso, entryTelefono
     entryCorreo.delete(0, tk.END)
 
 def registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo, donadores):
-    cedula = entryCedula.get().strip()
-    nombre = entryNombre.get().strip()
-    fecha = entryFecha.get().strip()
+    #Guarda lo que se digitó en los entrys en variables
+    cedula   = entryCedula.get().strip()
+    nombre   = entryNombre.get().strip()
+    fecha    = entryFecha.get().strip()
     tipoSangre = tipoSangreVar.get()
-    sexo = sexoVar.get()
-    peso = entryPeso.get().strip()
+    sexo     = sexoVar.get()
+    peso     = entryPeso.get().strip()
     telefono = entryTelefono.get().strip()
-    correo = entryCorreo.get().strip()
+    correo   = entryCorreo.get().strip()
+
     error = funciones.validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores)
     if error:
         messagebox.showerror("Error", error)
         return
+
     partes = nombre.split()
     dia, mes, anno = fecha.split("/")
+
     funciones.insertarDonador(donadores, tiposSangre, cedula, partes[0], partes[1], partes[2], tipoSangre, sexo, int(dia), int(mes), int(anno), peso, correo, telefono)
     funciones.guardarDonadores(donadores)
+
+    #Ventana de realimentación con información del donador
     mensajes = funciones.obtenerRealimentacion(cedula, (int(dia), int(mes), int(anno)), peso, tipoSangre, lugaresDonacion)
     ventanaRealimentacion = tk.Toplevel(ventana)
     ventanaRealimentacion.title("Información del Donador")
     ventanaRealimentacion.geometry("500x300")
+    tk.Label(ventanaRealimentacion, text="✓ Donador registrado correctamente.", font=("Arial", 10, "bold"), fg="green").pack(padx=10, pady=10, anchor="w")
     for mensaje in mensajes:
         tk.Label(ventanaRealimentacion, text=mensaje, wraplength=450, justify="left").pack(padx=10, pady=5, anchor="w")
     tk.Button(ventanaRealimentacion, text="Regresar", command=ventanaRealimentacion.destroy).pack(pady=10)
@@ -83,10 +90,10 @@ def insertarDonador(ventanaPrincipal, donadores):
     comboTipoSangre.grid(row=3, column=1, padx=10, pady=5)
     # Sexo
     tk.Label(ventana, text="Sexo:").grid(row=4, column=0, padx=10, pady=5, sticky="w")
-    sexoVar = tk.BooleanVar(value=True) #Guarda el valor seleccionado en RadioButton (femenino o masculino). Maculino como default
+    sexoVar = tk.BooleanVar(value=True) #Guarda el valor seleccionado en RadioButton (femenino o masculino). Masculino como default
     #Botones de selección
     tk.Radiobutton(ventana, text="Masculino", variable=sexoVar, value=True).grid(row=4, column=1, sticky="w")
-    tk.Radiobutton(ventana, text="Femenino", variable=sexoVar, value=False).grid(row=5, column=1, sticky="w")
+    tk.Radiobutton(ventana, text="Femenino",  variable=sexoVar, value=False).grid(row=5, column=1, sticky="w")
     # Peso
     tk.Label(ventana, text="Peso (kg):").grid(row=6, column=0, padx=10, pady=5, sticky="w")
     entryPeso = tk.Entry(ventana, width=30)
@@ -101,27 +108,49 @@ def insertarDonador(ventanaPrincipal, donadores):
     entryCorreo.grid(row=8, column=1, padx=10, pady=5)
     #Botones
     tk.Button(ventana, text="Registrar", width=12,
-    command=lambda: registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo, donadores)
+        command=lambda: registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo, donadores)
     ).grid(row=9, column=0, padx=10, pady=15)
     tk.Button(ventana, text="Limpiar", width=12,
         command=lambda: limpiarCampos(entryCedula, entryNombre, entryFecha, entryPeso, entryTelefono, entryCorreo)
     ).grid(row=9, column=1, padx=10, pady=15)
-    tk.Button(ventana, text="Regresar",  width=12, command=ventana.destroy).grid(row=9, column=2, padx=10, pady=15)
-    
+    tk.Button(ventana, text="Regresar", width=12, command=ventana.destroy).grid(row=9, column=2, padx=10, pady=15)
+
+def generarMensaje(ventana, entryCantidad, donadores):
+    cantidad = entryCantidad.get().strip()
+    if not cantidad.isdigit() or int(cantidad) <= 0:
+        messagebox.showerror("Error", "Ingrese un número mayor a 0")
+        return
+    funciones.generarDonadores(donadores, tiposSangre, int(cantidad))
+    funciones.guardarDonadores(donadores)
+    messagebox.showinfo("Éxito", f"{cantidad} donadores generados correctamente")
+    ventana.destroy()
+
+def generarDonadores(ventanaPrincipal, donadores):
+    ventana = tk.Toplevel(ventanaPrincipal) #Crea una ventana encima de la principal
+    ventana.title("Generar Donadores")
+    ventana.geometry("300x150")
+    tk.Label(ventana, text="Cantidad de donadores a generar:").pack(padx=10, pady=10)
+    entryCantidad = tk.Entry(ventana, width=20)
+    entryCantidad.pack(padx=10, pady=5)
+    tk.Button(ventana, text="Generar", width=12,
+        command=lambda: generarMensaje(ventana, entryCantidad, donadores)
+    ).pack(pady=10)
+
 def ventanaPrincipal():
     donadores = funciones.cargarDonadores()
     ventana = tk.Tk() #Crea la ventana principal
-    ventana.title("Banco de Sangre - TEC") #Le ponemos titulo a la ventana 
+    ventana.title("Banco de Sangre - TEC") #Le ponemos titulo a la ventana
     ventana.geometry("300x400") #Definimos el tamaño de la ventana
     tk.Label(ventana, text="Sistema de Donación de Sangre", font=("Arial", 12, "bold")).pack(pady=10) #Título que ve el usuario, utilizamos "Label" solo para mostrar texto
     #Botones para que el usuario pueda interactuar
-    tk.Button(ventana, text="1. Insertar donador",              width=30, command=lambda: insertarDonador(ventana, donadores)).pack(pady=5) #Utilizamos pack para 
-    tk.Button(ventana, text="2. Generar donadores",             width=30).pack(pady=5)
-    tk.Button(ventana, text="3. Actualizar datos del donador",  width=30).pack(pady=5)
-    tk.Button(ventana, text="4. Eliminar donador",              width=30).pack(pady=5)
-    tk.Button(ventana, text="5. Insertar lugar de donación",    width=30).pack(pady=5)
-    tk.Button(ventana, text="6. Reportes",                      width=30).pack(pady=5)
-    tk.Button(ventana, text="7. Salir",                         width=30, command=lambda: salir(ventana)).pack(pady=5)
+    tk.Button(ventana, text="1. Insertar donador",             width=30, command=lambda: insertarDonador(ventana, donadores)).pack(pady=5)
+    tk.Button(ventana, text="2. Generar donadores",            width=30, command=lambda: generarDonadores(ventana, donadores)).pack(pady=5)
+    tk.Button(ventana, text="3. Actualizar datos del donador", width=30).pack(pady=5)
+    tk.Button(ventana, text="4. Eliminar donador",             width=30).pack(pady=5)
+    tk.Button(ventana, text="5. Insertar lugar de donación",   width=30).pack(pady=5)
+    tk.Button(ventana, text="6. Reportes",                     width=30).pack(pady=5)
+    tk.Button(ventana, text="7. Salir",                        width=30, command=lambda: salir(ventana)).pack(pady=5)
     #Mantiene la ventana abierta
     ventana.mainloop()
+
 ventanaPrincipal()

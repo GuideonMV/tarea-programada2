@@ -2,11 +2,10 @@ import pickle
 import re
 from datetime import date
 import random
+from faker import Faker
 #Datos aleatorios
+fake = Faker('es_MX')
 archivoDonadores = "datos/donadores.pkl"
-nombresAleatorios = ["Ana", "Luis", "María", "Carlos", "Sofía", "Jorge", "Lucía", "Miguel", "Valeria", "Diego"]
-apellidosAleatorios = ["González", "Rodríguez", "López", "Martínez", "Pérez", "Sánchez", "Ramírez", "Torres", "Flores", "Rivera"]
-correosAleatorios = ["gmail.com", "costarricense.cr", "racsa.go.cr", "ccss.sa.cr"]
 
 def cargarDonadores():
     try:
@@ -55,7 +54,7 @@ def validarPeso(pesoTexto):
     except ValueError:
         return False
 
-def cedulaExiste(cedula, donadores):
+def existirCedula(cedula, donadores):
     for donador in donadores:
         if donador[1] == cedula:
             return True
@@ -80,6 +79,7 @@ def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2
     
     donadores.append(nuevoDonador)
     return donadores
+
 def validarNombre(nombre):
     partes = nombre.strip().split()
     return len(partes) >= 3
@@ -97,11 +97,11 @@ def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
         return "Correo inválido"
     if not validarPeso(peso):
         return "Peso inválido. Debe ser mayor a 50 y menor a 120"
-    if cedulaExiste(cedula, donadores):
+    if existirCedula(cedula, donadores):
         return "Esta cédula ya está registrada"
     return None
 
-def mensajeEdad(fecha):
+def recomendarEdad(fecha):
     hoy = date.today()
     dia, mes, anno = fecha
     edad = (hoy - date(anno, mes, dia)).days // 365
@@ -109,7 +109,7 @@ def mensajeEdad(fecha):
         return "Dado su fecha de nacimiento usted ya puede ser donador"
     return "Dado su fecha de nacimiento usted aún no puede ser donador"
 
-def mensajeProvincia(cedula, lugaresDonacion):
+def recomendarProvincia(cedula, lugaresDonacion):
     nombresProvincias = {
         "1": "San José", "2": "Alajuela", "3": "Cartago",
         "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
@@ -119,7 +119,7 @@ def mensajeProvincia(cedula, lugaresDonacion):
     nombreProvincia = nombresProvincias.get(provincia, "desconocida")
     return f"Dado que usted nació en la provincia de: {nombreProvincia}, usted podría donar en: {', '.join(lugares)}."
 
-def mensajePeso(peso):
+def recomendarPeso(peso):
     peso = float(peso)
     if peso <= 50:
         return "Usted debe pesar más de 50 kgms para poder ser donador"
@@ -127,7 +127,7 @@ def mensajePeso(peso):
         return "Dado su sobre peso, no es posible donar sangre"
     return "Usted posee un peso adecuado, correcto para ser donador de sangre"
 
-def mensajeTipoSangre(tipoSangre):
+def recomendarTipoSangre(tipoSangre):
     infoSangre = {
         "A+": "Se recomienda donar sangre entera y plaquetas.",
         "A-": "Se recomienda donar sangre entera y glóbulos rojos dobles.",
@@ -140,20 +140,76 @@ def mensajeTipoSangre(tipoSangre):
     }
     return f"Dado su tipo de sangre {tipoSangre}: {infoSangre[tipoSangre]}"
 
-def mensajeVideoSangreA(tipoSangre):
+def recomendarVideoSangreA(tipoSangre):
     if tipoSangre in ("A+", "A-"):
         return "Recomendación: vea el video 'Particularidades de la sangre tipo A: Responde diferente al estrés según la ciencia'."
     return None
 
 def obtenerRealimentacion(cedula, fecha, peso, tipoSangre, lugaresDonacion):
     mensajes = [
-        mensajeEdad(fecha),
-        mensajeProvincia(cedula, lugaresDonacion),
-        mensajePeso(peso),
-        mensajeTipoSangre(tipoSangre),
+        recomendarEdad(fecha),
+        recomendarProvincia(cedula, lugaresDonacion),
+        recomendarPeso(peso),
+        recomendarTipoSangre(tipoSangre),
     ]
-    video = mensajeVideoSangreA(tipoSangre)
+    video = recomendarVideoSangreA(tipoSangre)
     if video:
         mensajes.append(video)
     return mensajes
 
+def generarCedula():
+    provincia = str(random.randint(1, 8))
+    tomo = str(random.randint(1000, 9999))
+    asiento = str(random.randint(1000, 9999))
+    return f"{provincia}-{tomo}-{asiento}"
+
+def generarCorreo(nombre):
+    usuario = f"{nombre.lower().replace(' ', '')}{random.randint(1,99)}"
+    dominio = random.choice(["costarricense.cr", "racsa.go.cr", "ccss.sa.cr", "gmail.com"])
+    return f"{usuario}@{dominio}"
+
+def generarTelefono():
+    return f"{random.choice([2,4,6,7,8])}{random.randint(100,999)}-{random.randint(1000,9999)}"
+
+def determinarEstado(peso, anno):
+    if peso <= 50 or peso >= 120:
+        return 0, 3
+    elif anno > 2007:
+        return 0, 1
+    else:
+        return 1, 0
+
+def crearDonador(tiposSangre):
+    nombre   = fake.first_name()
+    apellido1 = fake.last_name()
+    apellido2 = fake.last_name()
+    cedula   = generarCedula()
+    tipoSangre = random.choice(tiposSangre)
+    sexo     = random.choice([True, False])
+    dia      = random.randint(1, 28)
+    mes      = random.randint(1, 12)
+    anno     = random.randint(1950, 2010)
+    peso     = round(random.uniform(40, 130), 1)
+    correo   = generarCorreo(nombre)
+    telefono = generarTelefono()
+    estado, justificacion = determinarEstado(peso, anno)
+
+    return [
+        [nombre, apellido1, apellido2],
+        cedula,
+        tiposSangre.index(tipoSangre),
+        sexo,
+        (dia, mes, anno),
+        float(peso),
+        correo,
+        telefono,
+        estado,
+        justificacion
+    ], cedula
+
+def generarDonadores(donadores, tiposSangre, cantidad):
+    for _ in range(cantidad):
+        donador, cedula = crearDonador(tiposSangre)
+        if not existirCedula(cedula, donadores):
+            donadores.append(donador)
+    return donadores
