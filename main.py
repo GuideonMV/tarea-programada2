@@ -19,6 +19,7 @@ lugaresDonacion = {
 archivoDonadores = "datos/donadores.pkl"
 donadores = []
 
+#Opcion Salir
 def salir(ventana):
     messagebox.showinfo("Salir", "Donar sangre, es donar vida") #Muestra este mensaje cuando se selecciona salir. El primer parámetro es el nombre de la mini ventana
     ventana.destroy() #Se cierra la ventana
@@ -33,16 +34,57 @@ def limpiarCampos(entryCedula, entryNombre, entryFecha, entryPeso, entryTelefono
     entryTelefono.delete(0, tk.END)
     entryCorreo.delete(0, tk.END)
 
+#Crea el formulario para insertar donadores y modificarlos
+
+def crearFormulario(ventana, tiposSangre):
+    #Crea los campos del formulario y los retorna para usarlos en insertar y actualizar
+    tk.Label(ventana, text="Cédula:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+    entryCedula = tk.Entry(ventana, width=30)
+    entryCedula.grid(row=0, column=1, padx=10, pady=5)
+
+    tk.Label(ventana, text="Nombre Completo:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
+    entryNombre = tk.Entry(ventana, width=30)
+    entryNombre.grid(row=1, column=1, padx=10, pady=5)
+
+    tk.Label(ventana, text="Fecha de nacimiento (DD/MM/AAAA):").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+    entryFecha = tk.Entry(ventana, width=30)
+    entryFecha.grid(row=2, column=1, padx=10, pady=5)
+
+    tk.Label(ventana, text="Tipo de sangre:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+    tipoSangreVar = tk.StringVar(value=tiposSangre[0]) #Guarda lo que está seleccionado en el optionMenu
+    tk.OptionMenu(ventana, tipoSangreVar, *tiposSangre).grid(row=3, column=1, padx=10, pady=5) #Le ponemos "*" a tiposSangre para desempacar todo lo que hay en la tupla
+
+    tk.Label(ventana, text="Sexo:").grid(row=4, column=0, padx=10, pady=5, sticky="w")
+    sexoVar = tk.BooleanVar(value=True) #Guarda el valor seleccionado en RadioButton (femenino o masculino). Masculino como default
+    #Botones de selección
+    tk.Radiobutton(ventana, text="Masculino", variable=sexoVar, value=True).grid(row=4, column=1, sticky="w")
+    tk.Radiobutton(ventana, text="Femenino",  variable=sexoVar, value=False).grid(row=5, column=1, sticky="w")
+
+    tk.Label(ventana, text="Peso (kg):").grid(row=6, column=0, padx=10, pady=5, sticky="w")
+    entryPeso = tk.Entry(ventana, width=30)
+    entryPeso.grid(row=6, column=1, padx=10, pady=5)
+
+    tk.Label(ventana, text="Teléfono:").grid(row=7, column=0, padx=10, pady=5, sticky="w")
+    entryTelefono = tk.Entry(ventana, width=30)
+    entryTelefono.grid(row=7, column=1, padx=10, pady=5)
+
+    tk.Label(ventana, text="Correo:").grid(row=8, column=0, padx=10, pady=5, sticky="w")
+    entryCorreo = tk.Entry(ventana, width=30)
+    entryCorreo.grid(row=8, column=1, padx=10, pady=5)
+
+    return entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo
+
+
 def registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo, donadores):
     #Guarda lo que se digitó en los entrys en variables
-    cedula   = entryCedula.get().strip()
-    nombre   = entryNombre.get().strip()
-    fecha    = entryFecha.get().strip()
+    cedula     = entryCedula.get().strip()
+    nombre     = entryNombre.get().strip()
+    fecha      = entryFecha.get().strip()
     tipoSangre = tipoSangreVar.get()
-    sexo     = sexoVar.get()
-    peso     = entryPeso.get().strip()
-    telefono = entryTelefono.get().strip()
-    correo   = entryCorreo.get().strip()
+    sexo       = sexoVar.get()
+    peso       = entryPeso.get().strip()
+    telefono   = entryTelefono.get().strip()
+    correo     = entryCorreo.get().strip()
 
     error = funciones.validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores)
     if error:
@@ -65,47 +107,13 @@ def registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexo
         tk.Label(ventanaRealimentacion, text=mensaje, wraplength=450, justify="left").pack(padx=10, pady=5, anchor="w")
     tk.Button(ventanaRealimentacion, text="Regresar", command=ventanaRealimentacion.destroy).pack(pady=10)
 
+#Opcion 1 del menu
 def insertarDonador(ventanaPrincipal, donadores):
     ventana = tk.Toplevel(ventanaPrincipal) #Crea una ventana encima de la principal
     ventana.title("Insertar Donador")
     ventana.geometry("400x500")
-    #Utilizamos "grid" para visualizar todo en forma de tabla
-    # Cédula
-    tk.Label(ventana, text="Cédula:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
-    #Utilizamos "entry" para que el usuario pueda ingresar los datos
-    entryCedula = tk.Entry(ventana, width=30)
-    entryCedula.grid(row=0, column=1, padx=10, pady=5)
-    # Nombre
-    tk.Label(ventana, text="Nombre Completo:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
-    entryNombre = tk.Entry(ventana, width=30)
-    entryNombre.grid(row=1, column=1, padx=10, pady=5)
-    # Fecha de nacimiento
-    tk.Label(ventana, text="Fecha de nacimiento (DD/MM/AAAA):").grid(row=2, column=0, padx=10, pady=5, sticky="w")
-    entryFecha = tk.Entry(ventana, width=30)
-    entryFecha.grid(row=2, column=1, padx=10, pady=5)
-    # Tipo de sangre
-    tk.Label(ventana, text="Tipo de sangre:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
-    tipoSangreVar = tk.StringVar(value=tiposSangre[0]) #Guarda lo que está seleccionado en el optionMenu
-    comboTipoSangre = tk.OptionMenu(ventana, tipoSangreVar, *tiposSangre) #Le ponemos "*" a tiposSangre para desempacar todo lo que hay en la tupla
-    comboTipoSangre.grid(row=3, column=1, padx=10, pady=5)
-    # Sexo
-    tk.Label(ventana, text="Sexo:").grid(row=4, column=0, padx=10, pady=5, sticky="w")
-    sexoVar = tk.BooleanVar(value=True) #Guarda el valor seleccionado en RadioButton (femenino o masculino). Masculino como default
-    #Botones de selección
-    tk.Radiobutton(ventana, text="Masculino", variable=sexoVar, value=True).grid(row=4, column=1, sticky="w")
-    tk.Radiobutton(ventana, text="Femenino",  variable=sexoVar, value=False).grid(row=5, column=1, sticky="w")
-    # Peso
-    tk.Label(ventana, text="Peso (kg):").grid(row=6, column=0, padx=10, pady=5, sticky="w")
-    entryPeso = tk.Entry(ventana, width=30)
-    entryPeso.grid(row=6, column=1, padx=10, pady=5)
-    # Teléfono
-    tk.Label(ventana, text="Teléfono:").grid(row=7, column=0, padx=10, pady=5, sticky="w")
-    entryTelefono = tk.Entry(ventana, width=30)
-    entryTelefono.grid(row=7, column=1, padx=10, pady=5)
-    # Correo
-    tk.Label(ventana, text="Correo:").grid(row=8, column=0, padx=10, pady=5, sticky="w")
-    entryCorreo = tk.Entry(ventana, width=30)
-    entryCorreo.grid(row=8, column=1, padx=10, pady=5)
+    #Utilizamos "grid" para visualizar todo en forma de tabla, crearFormulario retorna los campos
+    entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo = crearFormulario(ventana, tiposSangre)
     #Botones
     tk.Button(ventana, text="Registrar", width=12,
         command=lambda: registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo, donadores)
@@ -115,6 +123,8 @@ def insertarDonador(ventanaPrincipal, donadores):
     ).grid(row=9, column=1, padx=10, pady=15)
     tk.Button(ventana, text="Regresar", width=12, command=ventana.destroy).grid(row=9, column=2, padx=10, pady=15)
 
+
+#Opcio 2 del menu
 def generarMensaje(ventana, entryCantidad, donadores):
     cantidad = entryCantidad.get().strip()
     if not cantidad.isdigit() or int(cantidad) <= 0:
@@ -136,6 +146,80 @@ def generarDonadores(ventanaPrincipal, donadores):
         command=lambda: generarMensaje(ventana, entryCantidad, donadores)
     ).pack(pady=10)
 
+#Opcion 3 del menu
+def confirmarActualizar(ventana, donadores, indice, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo):
+    #Guarda lo que se digitó en los entrys en variables
+    nombre     = entryNombre.get().strip()
+    fecha      = entryFecha.get().strip()
+    tipoSangre = tipoSangreVar.get()
+    sexo       = sexoVar.get()
+    peso       = entryPeso.get().strip()
+    telefono   = entryTelefono.get().strip()
+    correo     = entryCorreo.get().strip()
+    cedula     = donadores[indice][1]
+
+    error = funciones.validarDonadorActualizar(cedula, nombre, fecha, telefono, correo, peso)
+    if error:
+        messagebox.showerror("Error", error)
+        return
+
+    partes = nombre.split()
+    dia, mes, anno = fecha.split("/")
+    funciones.actualizarDonador(donadores, tiposSangre, indice, partes[0], partes[1], partes[2], tipoSangre, sexo, int(dia), int(mes), int(anno), peso, correo, telefono)
+    funciones.guardarDonadores(donadores)
+    messagebox.showinfo("Éxito", "Datos actualizados correctamente.")
+    ventana.destroy()
+
+def mostrarFormularioActualizar(donadores, indice):
+    donador = donadores[indice]
+    ventana = tk.Toplevel() #Crea una ventana encima de la principal
+    ventana.title("Actualizar Donador")
+    ventana.geometry("400x500")
+    #Utilizamos crearFormulario para reutilizar los campos
+    entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo = crearFormulario(ventana, tiposSangre)
+
+    #Precargamos los datos del donador en los campos
+    entryCedula.insert(0, donador[1])
+    entryCedula.config(state="readonly") #La cédula no se puede modificar
+    entryNombre.insert(0, " ".join(donador[0]))
+    dia, mes, anno = donador[4]
+    entryFecha.insert(0, f"{dia:02d}/{mes:02d}/{anno}")
+    tipoSangreVar.set(tiposSangre[donador[2]])
+    sexoVar.set(donador[3])
+    entryPeso.insert(0, str(donador[5]))
+    entryTelefono.insert(0, donador[7])
+    entryCorreo.insert(0, donador[6])
+
+    #Botones
+    tk.Button(ventana, text="Confirmar", width=12,
+        command=lambda: confirmarActualizar(ventana, donadores, indice, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo)
+    ).grid(row=9, column=0, padx=10, pady=15)
+    tk.Button(ventana, text="Regresar", width=12, command=ventana.destroy).grid(row=9, column=1, padx=10, pady=15)
+
+def buscarParaActualizar(entryCedula, donadores, ventana):
+    cedula = entryCedula.get().strip()
+    if not funciones.validarCedula(cedula):
+        messagebox.showerror("Error", "Cédula inválida. Formato: #-####-####")
+        return
+    indice = funciones.buscarDonador(cedula, donadores)
+    if indice == -1:
+        messagebox.showerror("Error", f"La persona con el número de cédula: {cedula} no está registrada en la base de datos del Banco de Sangre aún.")
+        return
+    ventana.destroy()
+    mostrarFormularioActualizar(donadores, indice)
+
+def actualizarDonador(ventanaPrincipal, donadores):
+    ventana = tk.Toplevel(ventanaPrincipal) #Crea una ventana encima de la principal
+    ventana.title("Actualizar Donador")
+    ventana.geometry("300x150")
+    tk.Label(ventana, text="Ingrese el número de cédula:").pack(padx=10, pady=10)
+    entryCedula = tk.Entry(ventana, width=30)
+    entryCedula.pack(padx=10, pady=5)
+    tk.Button(ventana, text="Buscar", width=12,
+        command=lambda: buscarParaActualizar(entryCedula, donadores, ventana)
+    ).pack(pady=10)
+
+
 def ventanaPrincipal():
     donadores = funciones.cargarDonadores()
     ventana = tk.Tk() #Crea la ventana principal
@@ -145,7 +229,7 @@ def ventanaPrincipal():
     #Botones para que el usuario pueda interactuar
     tk.Button(ventana, text="1. Insertar donador",             width=30, command=lambda: insertarDonador(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="2. Generar donadores",            width=30, command=lambda: generarDonadores(ventana, donadores)).pack(pady=5)
-    tk.Button(ventana, text="3. Actualizar datos del donador", width=30).pack(pady=5)
+    tk.Button(ventana, text="3. Actualizar datos del donador", width=30, command=lambda: actualizarDonador(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="4. Eliminar donador",             width=30).pack(pady=5)
     tk.Button(ventana, text="5. Insertar lugar de donación",   width=30).pack(pady=5)
     tk.Button(ventana, text="6. Reportes",                     width=30).pack(pady=5)

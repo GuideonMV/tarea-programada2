@@ -7,6 +7,7 @@ from faker import Faker
 fake = Faker('es_MX')
 archivoDonadores = "datos/donadores.pkl"
 
+
 def cargarDonadores():
     try:
         with open(archivoDonadores, "rb") as archivo:
@@ -54,7 +55,7 @@ def validarPeso(pesoTexto):
     except ValueError:
         return False
 
-def existirCedula(cedula, donadores):
+def cedulaExiste(cedula, donadores):
     for donador in donadores:
         if donador[1] == cedula:
             return True
@@ -97,11 +98,24 @@ def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
         return "Correo inválido"
     if not validarPeso(peso):
         return "Peso inválido. Debe ser mayor a 50 y menor a 120"
-    if existirCedula(cedula, donadores):
+    if cedulaExiste(cedula, donadores):
         return "Esta cédula ya está registrada"
     return None
 
-def recomendarEdad(fecha):
+def validarDonadorActualizar(cedula, nombre, fecha, telefono, correo, peso):
+    if not validarNombre(nombre):
+        return "Ingrese nombre y dos apellidos"
+    if not validarFecha(fecha):
+        return "Fecha inválida. Formato: DD/MM/AAAA"
+    if not validarTelefono(telefono):
+        return "Teléfono inválido. Formato: ####-####"
+    if not validarCorreo(correo):
+        return "Correo inválido"
+    if not validarPeso(peso):
+        return "Peso inválido. Debe ser mayor a 50 y menor a 120"
+    return None
+
+def mensajeEdad(fecha):
     hoy = date.today()
     dia, mes, anno = fecha
     edad = (hoy - date(anno, mes, dia)).days // 365
@@ -109,7 +123,7 @@ def recomendarEdad(fecha):
         return "Dado su fecha de nacimiento usted ya puede ser donador"
     return "Dado su fecha de nacimiento usted aún no puede ser donador"
 
-def recomendarProvincia(cedula, lugaresDonacion):
+def mensajeProvincia(cedula, lugaresDonacion):
     nombresProvincias = {
         "1": "San José", "2": "Alajuela", "3": "Cartago",
         "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
@@ -119,7 +133,7 @@ def recomendarProvincia(cedula, lugaresDonacion):
     nombreProvincia = nombresProvincias.get(provincia, "desconocida")
     return f"Dado que usted nació en la provincia de: {nombreProvincia}, usted podría donar en: {', '.join(lugares)}."
 
-def recomendarPeso(peso):
+def mensajePeso(peso):
     peso = float(peso)
     if peso <= 50:
         return "Usted debe pesar más de 50 kgms para poder ser donador"
@@ -127,7 +141,7 @@ def recomendarPeso(peso):
         return "Dado su sobre peso, no es posible donar sangre"
     return "Usted posee un peso adecuado, correcto para ser donador de sangre"
 
-def recomendarTipoSangre(tipoSangre):
+def mensajeTipoSangre(tipoSangre):
     infoSangre = {
         "A+": "Se recomienda donar sangre entera y plaquetas.",
         "A-": "Se recomienda donar sangre entera y glóbulos rojos dobles.",
@@ -140,19 +154,19 @@ def recomendarTipoSangre(tipoSangre):
     }
     return f"Dado su tipo de sangre {tipoSangre}: {infoSangre[tipoSangre]}"
 
-def recomendarVideoSangreA(tipoSangre):
+def mensajeVideoSangreA(tipoSangre):
     if tipoSangre in ("A+", "A-"):
         return "Recomendación: vea el video 'Particularidades de la sangre tipo A: Responde diferente al estrés según la ciencia'."
     return None
 
 def obtenerRealimentacion(cedula, fecha, peso, tipoSangre, lugaresDonacion):
     mensajes = [
-        recomendarEdad(fecha),
-        recomendarProvincia(cedula, lugaresDonacion),
-        recomendarPeso(peso),
-        recomendarTipoSangre(tipoSangre),
+        mensajeEdad(fecha),
+        mensajeProvincia(cedula, lugaresDonacion),
+        mensajePeso(peso),
+        mensajeTipoSangre(tipoSangre),
     ]
-    video = recomendarVideoSangreA(tipoSangre)
+    video = mensajeVideoSangreA(tipoSangre)
     if video:
         mensajes.append(video)
     return mensajes
@@ -208,8 +222,25 @@ def crearDonador(tiposSangre):
     ], cedula
 
 def generarDonadores(donadores, tiposSangre, cantidad):
-    for _ in range(cantidad):
+    for x in range(cantidad):
         donador, cedula = crearDonador(tiposSangre)
-        if not existirCedula(cedula, donadores):
+        if not cedulaExiste(cedula, donadores):
             donadores.append(donador)
+    return donadores
+
+def buscarDonador(cedula, donadores):
+    for i, donador in enumerate(donadores):
+        if donador[1] == cedula:
+            return i
+    return -1
+
+def actualizarDonador(donadores, tiposSangre, indice, nombre, apellido1, apellido2, tipoSangre, sexo, dia, mes, anno, peso, correo, telefono):
+    indiceTipo = tiposSangre.index(tipoSangre)
+    donadores[indice][0] = [nombre, apellido1, apellido2]
+    donadores[indice][2] = indiceTipo
+    donadores[indice][3] = sexo
+    donadores[indice][4] = (dia, mes, anno)
+    donadores[indice][5] = float(peso)
+    donadores[indice][6] = correo
+    donadores[indice][7] = telefono
     return donadores
