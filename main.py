@@ -236,6 +236,10 @@ def buscarParaEliminar(entryCedula, donadores, ventana):
         messagebox.showinfo("No encontrado",
             f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún")
         return
+    # Verificar si ya está inactivo
+    if donadores[indice][8] == 0:
+        messagebox.showinfo("Aviso", f"El donador con cédula {cedula} ya se encuentra inactivo")
+        return
 
     donador = donadores[indice]
     ventanaConfirm = tk.Toplevel(ventana)
