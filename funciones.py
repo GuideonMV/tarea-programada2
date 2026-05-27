@@ -7,6 +7,12 @@ from faker import Faker
 fake = Faker('es_MX')
 archivoDonadores = "datos/donadores.pkl"
 
+#Variables Globales
+nombresProvincias = {
+    "1": "San José", "2": "Alajuela", "3": "Cartago",
+    "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
+}
+
 
 def cargarDonadores():
     try:
@@ -124,15 +130,10 @@ def mensajeEdad(fecha):
     return "Dado su fecha de nacimiento usted aún no puede ser donador"
 
 def mensajeProvincia(cedula, lugaresDonacion):
-    nombresProvincias = {
-        "1": "San José", "2": "Alajuela", "3": "Cartago",
-        "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
-    }
     provincia = cedula[0] if cedula[0] != "8" else "1"
     lugares = lugaresDonacion.get(provincia, [])
     nombreProvincia = nombresProvincias.get(provincia, "desconocida")
     return f"Dado que usted nació en la provincia de: {nombreProvincia}, usted podría donar en: {', '.join(lugares)}."
-
 def mensajePeso(peso):
     peso = float(peso)
     if peso <= 50:
