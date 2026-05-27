@@ -244,3 +244,10 @@ def actualizarDonador(donadores, tiposSangre, indice, nombre, apellido1, apellid
     donadores[indice][6] = correo
     donadores[indice][7] = telefono
     return donadores
+
+def eliminarDonador(cedula, donadores):
+    for donador in donadores:
+        if donador[1] == cedula:
+            donador[8] = 0
+            return True
+    return False

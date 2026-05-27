@@ -38,7 +38,7 @@ def limpiarCampos(entryCedula, entryNombre, entryFecha, entryPeso, entryTelefono
 
 def crearFormulario(ventana, tiposSangre):
     #Crea los campos del formulario y los retorna para usarlos en insertar y actualizar
-    tk.Label(ventana, text="Cédula:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(ventana, text="Cédula (#-####-####):").grid(row=0, column=0, padx=10, pady=5, sticky="w")
     entryCedula = tk.Entry(ventana, width=30)
     entryCedula.grid(row=0, column=1, padx=10, pady=5)
 
@@ -102,7 +102,7 @@ def registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexo
     ventanaRealimentacion = tk.Toplevel(ventana)
     ventanaRealimentacion.title("Información del Donador")
     ventanaRealimentacion.geometry("500x300")
-    tk.Label(ventanaRealimentacion, text="✓ Donador registrado correctamente.", font=("Arial", 10, "bold"), fg="green").pack(padx=10, pady=10, anchor="w")
+    tk.Label(ventanaRealimentacion, text="¡Donador registrado exitosamente!", font=("Arial", 10, "bold"), fg="green").pack(padx=10, pady=10, anchor="w")
     for mensaje in mensajes:
         tk.Label(ventanaRealimentacion, text=mensaje, wraplength=450, justify="left").pack(padx=10, pady=5, anchor="w")
     tk.Button(ventanaRealimentacion, text="Regresar", command=ventanaRealimentacion.destroy).pack(pady=10)
@@ -132,7 +132,7 @@ def generarMensaje(ventana, entryCantidad, donadores):
         return
     funciones.generarDonadores(donadores, tiposSangre, int(cantidad))
     funciones.guardarDonadores(donadores)
-    messagebox.showinfo("Éxito", f"{cantidad} donadores generados correctamente")
+    messagebox.showinfo("Éxito", f"¡{cantidad} donadores generados exitosamente!")
     ventana.destroy()
 
 def generarDonadores(ventanaPrincipal, donadores):
@@ -167,7 +167,7 @@ def confirmarActualizar(ventana, donadores, indice, entryCedula, entryNombre, en
     dia, mes, anno = fecha.split("/")
     funciones.actualizarDonador(donadores, tiposSangre, indice, partes[0], partes[1], partes[2], tipoSangre, sexo, int(dia), int(mes), int(anno), peso, correo, telefono)
     funciones.guardarDonadores(donadores)
-    messagebox.showinfo("Éxito", "Datos actualizados correctamente.")
+    messagebox.showinfo("Éxito", "¡Datos actualizados exitosamente!")
     ventana.destroy()
 
 def mostrarFormularioActualizar(donadores, indice):
@@ -199,11 +199,11 @@ def mostrarFormularioActualizar(donadores, indice):
 def buscarParaActualizar(entryCedula, donadores, ventana):
     cedula = entryCedula.get().strip()
     if not funciones.validarCedula(cedula):
-        messagebox.showerror("Error", "Cédula inválida. Formato: #-####-####")
+        messagebox.showerror("Error", "Cédula inválida. Ejemplo de formato: #-####-####")
         return
     indice = funciones.buscarDonador(cedula, donadores)
     if indice == -1:
-        messagebox.showerror("Error", f"La persona con el número de cédula: {cedula} no está registrada en la base de datos del Banco de Sangre aún.")
+        messagebox.showerror("Error", f"La persona con el número de cédula: {cedula} no está registrada en la base de datos del Banco de Sangre aún")
         return
     ventana.destroy()
     mostrarFormularioActualizar(donadores, indice)
@@ -219,7 +219,60 @@ def actualizarDonador(ventanaPrincipal, donadores):
         command=lambda: buscarParaActualizar(entryCedula, donadores, ventana)
     ).pack(pady=10)
 
+#Opcion 4
+def confirmarEliminacion(ventanaConfirm, cedula, donadores):
+    funciones.eliminarDonador(cedula, donadores)
+    funciones.guardarDonadores(donadores)
+    messagebox.showinfo("Éxito", "¡Donador eliminado exitosamente!")
+    ventanaConfirm.destroy()
 
+def buscarParaEliminar(entryCedula, donadores, ventana):
+    cedula = entryCedula.get().strip()
+    if not funciones.validarCedula(cedula):
+        messagebox.showerror("Error", "Cédula inválida. Ejemplo de formato: #-####-####")
+        return
+    indice = funciones.buscarDonador(cedula, donadores)
+    if indice == -1:
+        messagebox.showinfo("No encontrado",
+            f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún")
+        return
+
+    donador = donadores[indice]
+    ventanaConfirm = tk.Toplevel(ventana)
+    ventanaConfirm.title("Confirmar eliminación")
+    ventanaConfirm.geometry("420x200")
+
+    nombre = " ".join(donador[0])
+    tk.Label(ventanaConfirm, text=f"Donador encontrado: {nombre}", font=("Arial", 10, "bold")).pack(pady=10)
+    tk.Label(ventanaConfirm, text="El donador será marcado como inactivo en el sistema", wraplength=380, justify="left").pack(padx=10)
+    tk.Label(ventanaConfirm, text="¿Está seguro de que desea eliminarlo?").pack(pady=8)
+
+    labelMensaje = tk.Label(ventanaConfirm, text="", font=("Arial", 10))
+    labelMensaje.pack()
+
+    frameBotones = tk.Frame(ventanaConfirm)
+    frameBotones.pack(pady=5)
+    tk.Button(frameBotones, text="Confirmar", width=12,
+    command=lambda: confirmarEliminacion(ventanaConfirm, cedula, donadores)
+    ).grid(row=0, column=0, padx=10)
+    tk.Button(frameBotones, text="Cancelar", width=12,
+    command=ventanaConfirm.destroy
+    ).grid(row=0, column=1, padx=10)
+
+def eliminarDonador(ventanaPrincipal, donadores):
+    ventana = tk.Toplevel(ventanaPrincipal)
+    ventana.title("Eliminar Donador")
+    ventana.geometry("350x150")
+    tk.Label(ventana, text="Cédula del donador a eliminar:").grid(row=0, column=0, padx=10, pady=15, sticky="w")
+    entryCedula = tk.Entry(ventana, width=25)
+    entryCedula.grid(row=0, column=1, padx=10, pady=15)
+    tk.Button(ventana, text="Buscar", width=12,
+        command=lambda: buscarParaEliminar(entryCedula, donadores, ventana)
+    ).grid(row=1, column=0, padx=10, pady=10)
+    tk.Button(ventana, text="Regresar", width=12, command=ventana.destroy).grid(row=1, column=1, padx=10, pady=10)
+
+
+#Ventana Principal
 def ventanaPrincipal():
     donadores = funciones.cargarDonadores()
     ventana = tk.Tk() #Crea la ventana principal
@@ -230,7 +283,7 @@ def ventanaPrincipal():
     tk.Button(ventana, text="1. Insertar donador",             width=30, command=lambda: insertarDonador(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="2. Generar donadores",            width=30, command=lambda: generarDonadores(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="3. Actualizar datos del donador", width=30, command=lambda: actualizarDonador(ventana, donadores)).pack(pady=5)
-    tk.Button(ventana, text="4. Eliminar donador",             width=30).pack(pady=5)
+    tk.Button(ventana, text="4. Eliminar donador",             width=30, command=lambda: eliminarDonador(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="5. Insertar lugar de donación",   width=30).pack(pady=5)
     tk.Button(ventana, text="6. Reportes",                     width=30).pack(pady=5)
     tk.Button(ventana, text="7. Salir",                        width=30, command=lambda: salir(ventana)).pack(pady=5)
