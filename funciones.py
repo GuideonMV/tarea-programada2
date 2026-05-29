@@ -12,6 +12,15 @@ nombresProvincias = {
     "1": "San José", "2": "Alajuela", "3": "Cartago",
     "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
 }
+justificaciones = {
+    1: "Enfermedades Infecciosas/Crónicas: Portadores de VIH, Hepatitis B o C, sífilis, tuberculosis, o pacientes diabéticos insulinodependientes.",
+    2: "Conductas de Riesgo: Nuevas parejas sexuales o más de una pareja sexual en los últimos 3 meses.",
+    3: "Factores de Salud Física: Hemoglobina/hematocrito bajo o alto, presión arterial inestable, fiebre, o infecciones recientes.",
+    4: "Procedimientos Médicos: Haber recibido transfusiones, trasplantes, cirugías mayores, tatuajes, piercing o endoscopias recientes.",
+    5: "Uso de Medicamentos: Consumo de fármacos inyectables sin receta o ciertos medicamentos.",
+    6: "Estilo de Vida y Viajes: Uso de drogas recreativas, consumo de alcohol en las últimas 24 horas, o viajes a zonas endémicas.",
+    7: "Situaciones Específicas: Embarazo, lactancia o menstruación."
+}
 
 
 def cargarDonadores():
@@ -246,9 +255,10 @@ def actualizarDonador(donadores, tiposSangre, indice, nombre, apellido1, apellid
     donadores[indice][7] = telefono
     return donadores
 
-def eliminarDonador(cedula, donadores):
+def eliminarDonador(cedula, donadores, justificacion):
     for donador in donadores:
         if donador[1] == cedula:
             donador[8] = 0
+            donador[9] = justificacion
             return True
     return False

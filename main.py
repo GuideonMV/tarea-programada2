@@ -225,8 +225,9 @@ def actualizarDonador(ventanaPrincipal, donadores):
     ).pack(pady=10)
 
 #Opcion 4
-def confirmarEliminacion(ventanaConfirm, cedula, donadores):
-    funciones.eliminarDonador(cedula, donadores)
+def confirmarEliminacion(ventanaConfirm, cedula, donadores, justificacionVar):
+    justificacion = int(justificacionVar.get().split(" - ")[0])
+    funciones.eliminarDonador(cedula, donadores, justificacion)
     funciones.guardarDonadores(donadores)
     messagebox.showinfo("Éxito", "¡Donador eliminado exitosamente!")
     ventanaConfirm.destroy()
@@ -241,7 +242,6 @@ def buscarParaEliminar(entryCedula, donadores, ventana):
         messagebox.showinfo("No encontrado",
             f"La persona con el número de cédula: {cedula} no está registrado en la base de datos del Banco de Sangre aún")
         return
-    # Verificar si ya está inactivo
     if donadores[indice][8] == 0:
         messagebox.showinfo("Aviso", f"El donador con cédula {cedula} ya se encuentra inactivo")
         return
@@ -249,23 +249,28 @@ def buscarParaEliminar(entryCedula, donadores, ventana):
     donador = donadores[indice]
     ventanaConfirm = tk.Toplevel(ventana)
     ventanaConfirm.title("Confirmar eliminación")
-    ventanaConfirm.geometry("420x200")
+    ventanaConfirm.geometry("450x250")
 
     nombre = " ".join(donador[0])
     tk.Label(ventanaConfirm, text=f"Donador encontrado: {nombre}", font=("Arial", 10, "bold")).pack(pady=10)
-    tk.Label(ventanaConfirm, text="El donador será marcado como inactivo en el sistema", wraplength=380, justify="left").pack(padx=10)
-    tk.Label(ventanaConfirm, text="¿Está seguro de que desea eliminarlo?").pack(pady=8)
 
-    labelMensaje = tk.Label(ventanaConfirm, text="", font=("Arial", 10))
-    labelMensaje.pack()
+    tk.Label(ventanaConfirm, text="Seleccione la justificación:").pack()
+    opcionesJustificacion = [
+        f"{codigo} - {descripcion[:50]}..." 
+        for codigo, descripcion in funciones.justificaciones.items()
+    ]
+    justificacionVar = tk.StringVar(value=opcionesJustificacion[0])
+    tk.OptionMenu(ventanaConfirm, justificacionVar, *opcionesJustificacion).pack(padx=10, pady=5)
+
+    tk.Label(ventanaConfirm, text="¿Está seguro de que desea eliminarlo?").pack(pady=8)
 
     frameBotones = tk.Frame(ventanaConfirm)
     frameBotones.pack(pady=5)
     tk.Button(frameBotones, text="Confirmar", width=12,
-    command=lambda: confirmarEliminacion(ventanaConfirm, cedula, donadores)
+        command=lambda: confirmarEliminacion(ventanaConfirm, cedula, donadores, justificacionVar)
     ).grid(row=0, column=0, padx=10)
     tk.Button(frameBotones, text="Cancelar", width=12,
-    command=ventanaConfirm.destroy
+        command=ventanaConfirm.destroy
     ).grid(row=0, column=1, padx=10)
 
 def eliminarDonador(ventanaPrincipal, donadores):
