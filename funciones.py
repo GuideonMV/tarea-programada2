@@ -12,6 +12,7 @@ nombresProvincias = {
     "1": "San José", "2": "Alajuela", "3": "Cartago",
     "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
 }
+
 justificaciones = {
     1: "Enfermedades Infecciosas/Crónicas: Portadores de VIH, Hepatitis B o C, sífilis, tuberculosis, o pacientes diabéticos insulinodependientes.",
     2: "Conductas de Riesgo: Nuevas parejas sexuales o más de una pareja sexual en los últimos 3 meses.",

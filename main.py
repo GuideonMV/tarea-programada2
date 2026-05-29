@@ -128,7 +128,6 @@ def insertarDonador(ventanaPrincipal, donadores):
     ).grid(row=9, column=1, padx=10, pady=15)
     tk.Button(ventana, text="Regresar", width=12, command=ventana.destroy).grid(row=9, column=2, padx=10, pady=15)
 
-
 #Opcio 2 del menu
 def generarMensaje(ventana, entryCantidad, donadores):
     cantidad = entryCantidad.get().strip()
@@ -227,6 +226,11 @@ def actualizarDonador(ventanaPrincipal, donadores):
 #Opcion 4
 def confirmarEliminacion(ventanaConfirm, cedula, donadores, justificacionVar):
     justificacion = int(justificacionVar.get().split(" - ")[0])
+    indice = funciones.buscarDonador(cedula, donadores)
+    esMasculino = donadores[indice][3]
+    if esMasculino and justificacion == 7:
+        messagebox.showerror("Error", "La justificación de embarazo no aplica para donadores masculinos")
+        return
     funciones.eliminarDonador(cedula, donadores, justificacion)
     funciones.guardarDonadores(donadores)
     messagebox.showinfo("Éxito", "¡Donador eliminado exitosamente!")
@@ -255,10 +259,7 @@ def buscarParaEliminar(entryCedula, donadores, ventana):
     tk.Label(ventanaConfirm, text=f"Donador encontrado: {nombre}", font=("Arial", 10, "bold")).pack(pady=10)
 
     tk.Label(ventanaConfirm, text="Seleccione la justificación:").pack()
-    opcionesJustificacion = [
-        f"{codigo} - {descripcion[:50]}..." 
-        for codigo, descripcion in funciones.justificaciones.items()
-    ]
+    opcionesJustificacion = [f"{codigo} - {justificacion}" for codigo, justificacion in funciones.justificaciones.items()]
     justificacionVar = tk.StringVar(value=opcionesJustificacion[0])
     tk.OptionMenu(ventanaConfirm, justificacionVar, *opcionesJustificacion).pack(padx=10, pady=5)
 
