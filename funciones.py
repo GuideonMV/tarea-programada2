@@ -51,7 +51,13 @@ def validarFecha(fecha):
         return False
     try:
         dia, mes, anno = map(int, fecha.split("/"))
-        date(anno, mes, dia)
+        fechaNacimiento = date(anno, mes, dia)
+        hoy = date.today()
+        if fechaNacimiento >= hoy:
+            return False 
+        edad = (hoy - fechaNacimiento).days // 365
+        if edad < 18:
+            return False 
         return True
     except ValueError:
         return False
@@ -107,7 +113,7 @@ def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
     if not validarNombre(nombre):
         return "Ingrese nombre y dos apellidos"
     if not validarFecha(fecha):
-        return "Fecha inválida. Formato: DD/MM/AAAA"
+        return "Fecha inválida o el donador debe ser mayor de 18 años. Formato: DD/MM/AAAA"
     if not validarTelefono(telefono):
         return "Teléfono inválido. Formato: ####-####"
     if not validarCorreo(correo):
@@ -122,7 +128,7 @@ def validarDonadorActualizar(cedula, nombre, fecha, telefono, correo, peso):
     if not validarNombre(nombre):
         return "Ingrese nombre y dos apellidos"
     if not validarFecha(fecha):
-        return "Fecha inválida. Formato: DD/MM/AAAA"
+        return "Fecha inválida o el donador debe ser mayor de 18 años. Formato: DD/MM/AAAA"
     if not validarTelefono(telefono):
         return "Teléfono inválido. Formato: ####-####"
     if not validarCorreo(correo):
