@@ -348,6 +348,37 @@ def ventanaReporteProvincia(ventanaPadre, donadores, nombresProvincias):
     ).pack(pady=5)
     tk.Button(ventana, text="Regresar", width=15, command=ventana.destroy).pack(pady=5)
 
+#Rango de edad
+def generarReporteRangoEdad(entryInicial, entryFinal, listaDonadores):
+    txtInicial = entryInicial.get().strip()
+    txtFinal = entryFinal.get().strip()
+    mensajeError = reportes.validarEdadReporte(txtInicial, txtFinal)
+    if mensajeError is not None:
+        messagebox.showerror("Error de validación", mensajeError)
+        return
+    edadInicialInt = int(txtInicial)
+    edadFinalInt = int(txtFinal) if txtFinal != "" else None
+    exito = reportes.reportePorRangoEdad(listaDonadores, edadInicialInt, edadFinalInt)
+    if exito:
+        messagebox.showinfo("Éxito", "¡Reporte generado exitosamente!")
+    else:
+        messagebox.showerror("Error", "No se pudo crear el archivo")
+    
+def ventanaReporteRangoEdad(ventanaPadre, listaDonadores):
+    ventanaSecundaria = tk.Toplevel(ventanaPadre)
+    ventanaSecundaria.title("Reporte - Por Rango de Edad")
+    ventanaSecundaria.geometry("300x200")
+    tk.Label(ventanaSecundaria, text="Edad inicial:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    entryInicial = tk.Entry(ventanaSecundaria, width=10)
+    entryInicial.grid(row=0, column=1, padx=10, pady=10)
+    tk.Label(ventanaSecundaria, text="Edad final:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
+    entryFinal = tk.Entry(ventanaSecundaria, width=10) 
+    entryFinal.grid(row=1, column=1, padx=10, pady=10)
+    tk.Button(ventanaSecundaria, text="Generar reporte", width=15,
+        command=lambda: generarReporteRangoEdad(entryInicial, entryFinal, listaDonadores)
+    ).grid(row=2, column=0, padx=10, pady=10)
+    tk.Button(ventanaSecundaria, text="Regresar", width=15, command=ventanaSecundaria.destroy).grid(row=2, column=1, padx=10, pady=10)
+
 #Menu de reportes
 def ventanaReportes(ventanaPadre, donadores):
     ventana = tk.Toplevel(ventanaPadre)
@@ -355,7 +386,7 @@ def ventanaReportes(ventanaPadre, donadores):
     ventana.geometry("300x450")
     tk.Label(ventana, text="Reportes", font=("Arial", 12, "bold")).pack(pady=10)
     tk.Button(ventana, text="1. Donantes por provincia",      width=30, command=lambda: ventanaReporteProvincia(ventana, donadores, nombresProvincias)).pack(pady=5)
-    tk.Button(ventana, text="2. Por rango de edad",           width=30).pack(pady=5)
+    tk.Button(ventana, text="2. Por rango de edad", width=30, command=lambda: ventanaReporteRangoEdad(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="3. Por tipo de sangre",          width=30).pack(pady=5)
     tk.Button(ventana, text="4. Lista completa de donadores", width=30).pack(pady=5)
     tk.Button(ventana, text="5. Mujeres donantes O-",         width=30).pack(pady=5)
