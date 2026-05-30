@@ -128,3 +128,20 @@ def reporteEmergenciaTipoSangre(donadores, tipoSangreBuscado, provincia):
     encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
     nombreArchivo = f"reporte-emergencia-{tipoSangreBuscado.replace('+','pos').replace('-','neg')}-{provincia}.html"
     return generarHTML(titulo, encabezados, filas, nombreArchivo)
+
+#Reporte 4
+def reporteListaCompletaDonadores(donadores):
+    resultado = [d for d in donadores if d[8] == 1]
+    resultado.sort(key=lambda d: d[1][0])  # ordena por provincia (primer dígito de cédula)
+    filas = []
+    for donador in resultado:
+        nombreCompleto = " ".join(donador[0])
+        dia, mes, anno = donador[4]
+        fechaNac = f"{dia:02d}/{mes:02d}/{anno}"
+        tipoSangre = funciones.tiposSangre[donador[2]]
+        sexo = "Masculino" if donador[3] else "Femenino"
+        filas.append([donador[1], nombreCompleto, tipoSangre, fechaNac, donador[5], sexo, donador[7], donador[6]])
+
+    titulo = "Lista Completa de Donadores — Día Mundial del Donante de Sangre (14 de junio)"
+    encabezados = ["Cédula", "Nombre Completo", "Tipo de Sangre", "Fecha de Nacimiento", "Peso (kg)", "Sexo", "Teléfono", "Correo"]
+    return generarHTML(titulo, encabezados, filas, "reporte-lista-completa.html")

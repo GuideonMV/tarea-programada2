@@ -379,7 +379,7 @@ def ventanaReporteRangoEdad(ventanaPadre, listaDonadores):
     ).grid(row=2, column=0, padx=10, pady=10)
     tk.Button(ventanaSecundaria, text="Regresar", width=15, command=ventanaSecundaria.destroy).grid(row=2, column=1, padx=10, pady=10)
 
-    #Reporte 3
+#Reporte 3
 
 def generarReporteEmergencia(tipoSangreVar, provinciaVar, donadores):
     tipoSangre = tipoSangreVar.get()
@@ -394,16 +394,13 @@ def ventanaReporteEmergencia(ventanaPadre, donadores):
     ventana = tk.Toplevel(ventanaPadre)
     ventana.title("Reporte - Emergencia por Tipo de Sangre")
     ventana.geometry("380x220")
-
     tk.Label(ventana, text="Tipo de sangre:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
     tipoSangreVar = tk.StringVar(value=funciones.tiposSangre[0])
     tk.OptionMenu(ventana, tipoSangreVar, *funciones.tiposSangre).grid(row=0, column=1, padx=10, pady=10, sticky="w")
-
     tk.Label(ventana, text="Provincia:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
     opcionesProv = [f"{cod} - {nom}" for cod, nom in nombresProvincias.items()]
     provinciaVar = tk.StringVar(value=opcionesProv[0])
     tk.OptionMenu(ventana, provinciaVar, *opcionesProv).grid(row=1, column=1, padx=10, pady=10, sticky="w")
-
     frameBotones = tk.Frame(ventana)
     frameBotones.grid(row=2, column=0, columnspan=2, pady=15)
     tk.Button(frameBotones, text="Generar reporte", width=15,
@@ -412,6 +409,14 @@ def ventanaReporteEmergencia(ventanaPadre, donadores):
     tk.Button(frameBotones, text="Regresar", width=15,
         command=ventana.destroy
     ).grid(row=0, column=1, padx=10)
+
+# Reporte 4
+def generarReporteListaCompleta(donadores):
+    resultado = reportes.reporteListaCompletaDonadores(donadores)
+    if resultado:
+        messagebox.showinfo("Éxito", "¡Reporte generado exitosamente!")
+    else:
+        messagebox.showerror("Error", "Reporte no creado")
 
 #Menu de reportes
 def ventanaReportes(ventanaPadre, donadores):
@@ -422,7 +427,7 @@ def ventanaReportes(ventanaPadre, donadores):
     tk.Button(ventana, text="1. Donantes por provincia",      width=30, command=lambda: ventanaReporteProvincia(ventana, donadores, nombresProvincias)).pack(pady=5)
     tk.Button(ventana, text="2. Por rango de edad", width=30, command=lambda: ventanaReporteRangoEdad(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="3. Por tipo de sangre",          width=30, command=lambda: ventanaReporteEmergencia(ventana, donadores)).pack(pady=5)
-    tk.Button(ventana, text="4. Lista completa de donadores", width=30).pack(pady=5)
+    tk.Button(ventana, text="4. Lista completa de donadores", width=30, command=lambda: generarReporteListaCompleta(donadores)).pack(pady=5)
     tk.Button(ventana, text="5. Mujeres donantes O-",         width=30).pack(pady=5)
     tk.Button(ventana, text="6. ¿A quién puede donar?",       width=30).pack(pady=5)
     tk.Button(ventana, text="7. ¿De quién puede recibir?",    width=30).pack(pady=5)
