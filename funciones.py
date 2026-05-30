@@ -3,6 +3,7 @@ import re
 from datetime import date
 import random
 from faker import Faker
+from datetime import date, timedelta
 
 #Datos aleatorios
 fake = Faker('es_MX')
@@ -13,6 +14,30 @@ nombresProvincias = {
     "1": "San José", "2": "Alajuela", "3": "Cartago",
     "4": "Heredia", "5": "Guanacaste", "6": "Puntarenas", "7": "Limón"
 }
+
+compatibilidadDonacion = {
+    "O+":  ["O+", "A+", "B+", "AB+"],
+    "O-":  ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"],
+    "A+":  ["A+", "AB+"],
+    "A-":  ["A+", "A-", "AB+", "AB-"],
+    "B+":  ["B+", "AB+"],
+    "B-":  ["B+", "B-", "AB+", "AB-"],
+    "AB+": ["AB+"],
+    "AB-": ["AB+", "AB-"],
+}
+
+compatibilidadRecepcion = {
+    "O+":  ["O+", "O-"],
+    "O-":  ["O-"],
+    "A+":  ["A+", "A-", "O+", "O-"],
+    "A-":  ["A-", "O-"],
+    "B+":  ["B+", "B-", "O+", "O-"],
+    "B-":  ["B-", "O-"],
+    "AB+": ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"],
+    "AB-": ["AB-", "A-", "B-", "O-"],
+}
+
+tiposSangre = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
 
 justificaciones = {
     1: "Enfermedades Infecciosas/Crónicas: Portadores de VIH, Hepatitis B o C, sífilis, tuberculosis, o pacientes diabéticos insulinodependientes.",
@@ -108,15 +133,16 @@ def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2
     indiceTipo = tiposSangre.index(tipoSangre)
     nuevoDonador = [
         [nombre, apellido1, apellido2],
-        cedula,                         
-        indiceTipo,                      
-        sexo,                            
-        (dia, mes, anno),                
-        float(peso),                     
-        correo,                          
-        telefono,                        
-        1,                               
-        0                                
+        cedula,
+        indiceTipo,
+        sexo,
+        (dia, mes, anno),
+        float(peso),
+        correo,
+        telefono,
+        1,
+        0,
+        date.today()
     ]
     donadores.append(nuevoDonador)
     return donadores
@@ -142,20 +168,20 @@ def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
 
 def recomendarTipoSangre(tipoSangre):
     infoSangre = {
-        "A+": "Se recomienda donar sangre entera y plaquetas.",
-        "A-": "Se recomienda donar sangre entera y glóbulos rojos dobles.",
-        "B+": "Se recomienda donar sangre entera y glóbulos rojos dobles.",
-        "B-": "Se recomienda donar sangre entera o plaquetas.",
-        "O+": "Se recomienda donar glóbulos rojos dobles y sangre entera.",
-        "O-": "Se recomienda donar glóbulos rojos dobles y sangre entera.",
-        "AB+": "Se recomienda hacer donaciones de plaquetas y plasma.",
-        "AB-": "Se recomienda donar plaquetas y plasma."
+        "A+": "Se recomienda donar sangre entera y plaquetas",
+        "A-": "Se recomienda donar sangre entera y glóbulos rojos dobles",
+        "B+": "Se recomienda donar sangre entera y glóbulos rojos dobles",
+        "B-": "Se recomienda donar sangre entera o plaquetas",
+        "O+": "Se recomienda donar glóbulos rojos dobles y sangre entera",
+        "O-": "Se recomienda donar glóbulos rojos dobles y sangre entera",
+        "AB+": "Se recomienda hacer donaciones de plaquetas y plasma",
+        "AB-": "Se recomienda donar plaquetas y plasma"
     }
     return f"Dado su tipo de sangre {tipoSangre}: {infoSangre[tipoSangre]}"
 
 def recomendarVideoSangreA(tipoSangre):
     if tipoSangre in ("A+", "A-"):
-        return "Recomendación: vea el video 'Particularidades de la sangre tipo A: Responde diferente al estrés según la ciencia'."
+        return "Recomendación: vea el video 'Particularidades de la sangre tipo A: Responde diferente al estrés según la ciencia'"
     return None
 
 def obtenerRealimentacion(cedula, fecha, peso, tipoSangre, lugaresDonacion):
@@ -184,6 +210,7 @@ def generarCorreo(nombre):
 
 def generarTelefono():
     return f"{random.choice([2,4,6,7,8])}{random.randint(100,999)}-{random.randint(1000,9999)}"
+
 def determinarEstado(peso, anno):
     if peso <= 50 or peso >= 120:
         return 0, 3
@@ -191,6 +218,7 @@ def determinarEstado(peso, anno):
         return 0, 1
     else:
         return 1, 0
+
 #Funciones para generar donadores de manera masiva (op#2)
 def crearDonador(tiposSangre):
     nombre   = fake.first_name()
@@ -206,6 +234,7 @@ def crearDonador(tiposSangre):
     correo   = generarCorreo(nombre)
     telefono = generarTelefono()
     estado, justificacion = determinarEstado(peso, anno)
+    fechaUltimaDonacion = date.today() - timedelta(days=random.randint(0, 180))
     return [
         [nombre, apellido1, apellido2], cedula, tiposSangre.index(tipoSangre),
         sexo,
@@ -214,8 +243,8 @@ def crearDonador(tiposSangre):
         correo,
         telefono,
         estado,
-        justificacion
-    ], cedula
+        justificacion,
+        fechaUltimaDonacion], cedula
 
 def generarDonadores(donadores, tiposSangre, cantidad):
     for x in range(cantidad):

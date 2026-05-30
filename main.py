@@ -5,7 +5,7 @@ import pickle
 import reportes
 
 #Variables Globales
-tiposSangre = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
+
 
 nombresProvincias = {
     "1": "San José", "2": "Alajuela", "3": "Cartago",
@@ -100,11 +100,11 @@ def registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexo
     partes = nombre.split()
     dia, mes, anno = fecha.split("/")
 
-    funciones.insertarDonador(donadores, tiposSangre, cedula, partes[0], partes[1], partes[2], tipoSangre, sexo, int(dia), int(mes), int(anno), peso, correo, telefono)
+    funciones.insertarDonador(donadores, funciones.tiposSangre, cedula, partes[0], partes[1], partes[2], tipoSangre, sexo, int(dia), int(mes), int(anno), peso, correo, telefono)
     funciones.guardarDonadores(donadores)
 
     #Ventana de realimentación con información del donador
-    mensajes = funciones.obtenerRealimentacion(cedula, (int(dia), int(mes), int(anno)), peso, tipoSangre, lugaresDonacion)
+    mensajes = funciones.obtenerRealimentacion(cedula, fecha, peso, tipoSangre, lugaresDonacion)
     ventanaRealimentacion = tk.Toplevel(ventana)
     ventanaRealimentacion.title("Información del Donador")
     ventanaRealimentacion.geometry("500x300")
@@ -119,7 +119,7 @@ def insertarDonador(ventanaPrincipal, donadores):
     ventana.title("Insertar Donador")
     ventana.geometry("400x500")
     #Utilizamos "grid" para visualizar todo en forma de tabla, crearFormulario retorna los campos
-    entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo = crearFormulario(ventana, tiposSangre)
+    entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo = crearFormulario(ventana, funciones.tiposSangre)
     #Botones
     tk.Button(ventana, text="Registrar", width=12,
         command=lambda: registrar(ventana, entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo, donadores)
@@ -135,7 +135,7 @@ def generarMensaje(ventana, entryCantidad, donadores):
     if not cantidad.isdigit() or int(cantidad) <= 0:
         messagebox.showerror("Error", "Ingrese un número mayor a 0")
         return
-    funciones.generarDonadores(donadores, tiposSangre, int(cantidad))
+    funciones.generarDonadores(donadores, funciones.tiposSangre, int(cantidad))
     funciones.guardarDonadores(donadores)
     messagebox.showinfo("Éxito", f"¡{cantidad} donadores generados exitosamente!")
     ventana.destroy()
@@ -170,7 +170,7 @@ def confirmarActualizar(ventana, donadores, indice, entryCedula, entryNombre, en
 
     partes = nombre.split()
     dia, mes, anno = fecha.split("/")
-    funciones.actualizarDonador(donadores, tiposSangre, indice, partes[0], partes[1], partes[2], tipoSangre, sexo, int(dia), int(mes), int(anno), peso, correo, telefono)
+    funciones.actualizarDonador(donadores, funciones.tiposSangre, indice, partes[0], partes[1], partes[2], tipoSangre, sexo, int(dia), int(mes), int(anno), peso, correo, telefono)
     funciones.guardarDonadores(donadores)
     messagebox.showinfo("Éxito", "¡Datos actualizados exitosamente!")
     ventana.destroy()
@@ -181,7 +181,7 @@ def mostrarFormularioActualizar(donadores, indice):
     ventana.title("Actualizar Donador")
     ventana.geometry("400x500")
     #Utilizamos crearFormulario para reutilizar los campos
-    entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo = crearFormulario(ventana, tiposSangre)
+    entryCedula, entryNombre, entryFecha, tipoSangreVar, sexoVar, entryPeso, entryTelefono, entryCorreo = crearFormulario(ventana, funciones.tiposSangre)
 
     #Precargamos los datos del donador en los campos
     entryCedula.insert(0, donador[1])
@@ -189,7 +189,7 @@ def mostrarFormularioActualizar(donadores, indice):
     entryNombre.insert(0, " ".join(donador[0]))
     dia, mes, anno = donador[4]
     entryFecha.insert(0, f"{dia:02d}/{mes:02d}/{anno}")
-    tipoSangreVar.set(tiposSangre[donador[2]])
+    tipoSangreVar.set(funciones.tiposSangre[donador[2]])
     sexoVar.set(donador[3])
     entryPeso.insert(0, str(donador[5]))
     entryTelefono.insert(0, donador[7])
@@ -325,9 +325,9 @@ def insertarLugarDonacion(ventanaPrincipal):
 #Provincia
 def generarReporteProvincia(provinciaVar, ventana, donadores, nombresProvincias):
     provincia = provinciaVar.get().split(" - ")[0]
-    resultado = reportes.reporteDonantesporProvincia(donadores, tiposSangre, provincia, nombresProvincias)
+    resultado = reportes.reporteDonantesporProvincia(donadores, funciones.tiposSangre, provincia, nombresProvincias)
     if resultado:
-        messagebox.showinfo("Éxito", "¡Reporte creado exitosamente!")
+        messagebox.showinfo("Éxito", "¡Reporte generado exitosamente!")
     else:
         messagebox.showerror("Error", "Reporte no creado")
 
@@ -379,6 +379,40 @@ def ventanaReporteRangoEdad(ventanaPadre, listaDonadores):
     ).grid(row=2, column=0, padx=10, pady=10)
     tk.Button(ventanaSecundaria, text="Regresar", width=15, command=ventanaSecundaria.destroy).grid(row=2, column=1, padx=10, pady=10)
 
+    #Reporte 3
+
+def generarReporteEmergencia(tipoSangreVar, provinciaVar, donadores):
+    tipoSangre = tipoSangreVar.get()
+    provincia  = provinciaVar.get().split(" - ")[0]
+    resultado = reportes.reporteEmergenciaTipoSangre(donadores, tipoSangre, provincia)
+    if resultado:
+        messagebox.showinfo("Éxito", "¡Reporte generado exitosamente!")
+    else:
+        messagebox.showerror("Error", "Reporte no creado")
+
+def ventanaReporteEmergencia(ventanaPadre, donadores):
+    ventana = tk.Toplevel(ventanaPadre)
+    ventana.title("Reporte - Emergencia por Tipo de Sangre")
+    ventana.geometry("380x220")
+
+    tk.Label(ventana, text="Tipo de sangre:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    tipoSangreVar = tk.StringVar(value=funciones.tiposSangre[0])
+    tk.OptionMenu(ventana, tipoSangreVar, *funciones.tiposSangre).grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
+    tk.Label(ventana, text="Provincia:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
+    opcionesProv = [f"{cod} - {nom}" for cod, nom in nombresProvincias.items()]
+    provinciaVar = tk.StringVar(value=opcionesProv[0])
+    tk.OptionMenu(ventana, provinciaVar, *opcionesProv).grid(row=1, column=1, padx=10, pady=10, sticky="w")
+
+    frameBotones = tk.Frame(ventana)
+    frameBotones.grid(row=2, column=0, columnspan=2, pady=15)
+    tk.Button(frameBotones, text="Generar reporte", width=15,
+        command=lambda: generarReporteEmergencia(tipoSangreVar, provinciaVar, donadores)
+    ).grid(row=0, column=0, padx=10)
+    tk.Button(frameBotones, text="Regresar", width=15,
+        command=ventana.destroy
+    ).grid(row=0, column=1, padx=10)
+
 #Menu de reportes
 def ventanaReportes(ventanaPadre, donadores):
     ventana = tk.Toplevel(ventanaPadre)
@@ -387,7 +421,7 @@ def ventanaReportes(ventanaPadre, donadores):
     tk.Label(ventana, text="Reportes", font=("Arial", 12, "bold")).pack(pady=10)
     tk.Button(ventana, text="1. Donantes por provincia",      width=30, command=lambda: ventanaReporteProvincia(ventana, donadores, nombresProvincias)).pack(pady=5)
     tk.Button(ventana, text="2. Por rango de edad", width=30, command=lambda: ventanaReporteRangoEdad(ventana, donadores)).pack(pady=5)
-    tk.Button(ventana, text="3. Por tipo de sangre",          width=30).pack(pady=5)
+    tk.Button(ventana, text="3. Por tipo de sangre",          width=30, command=lambda: ventanaReporteEmergencia(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="4. Lista completa de donadores", width=30).pack(pady=5)
     tk.Button(ventana, text="5. Mujeres donantes O-",         width=30).pack(pady=5)
     tk.Button(ventana, text="6. ¿A quién puede donar?",       width=30).pack(pady=5)
@@ -417,3 +451,4 @@ def ventanaPrincipal():
     ventana.mainloop() 
 
 ventanaPrincipal()
+

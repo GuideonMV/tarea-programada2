@@ -99,3 +99,32 @@ def validarEdadReporte(edadInicial, edadFinal):
         if int(edadFinal) < int(edadInicial):
             return "La edad final no puede ser menor a la inicial"
     return None
+
+#Reportes 3
+def reporteEmergenciaTipoSangre(donadores, tipoSangreBuscado, provincia):
+    hoy = date.today()
+    indiceTipo = funciones.tiposSangre.index(tipoSangreBuscado)
+    resultado = []
+    for donador in donadores:
+        if donador[8] != 1:
+            continue
+        if donador[2] != indiceTipo:
+            continue
+        if donador[1][0] != provincia:
+            continue
+        ultimaDonacion = donador[10] if len(donador) > 10 else None
+        if ultimaDonacion and (hoy - ultimaDonacion).days < 56:  # 8 semanas = 56 días
+            continue
+        resultado.append(donador)
+    resultado.sort(key=lambda donador: donador[0][0] + donador[0][1] + donador[0][2])
+    filas = []
+    for donador in resultado:
+        nombreCompleto = " ".join(donador[0])
+        dia, mes, anno = donador[4]
+        fechaNac = f"{dia:02d}/{mes:02d}/{anno}"
+        filas.append([donador[1], nombreCompleto, fechaNac, donador[7], donador[6]])
+    nombreProvincia = funciones.nombresProvincias.get(provincia, "desconocida")
+    titulo = f"Donantes en Emergencia — Tipo {tipoSangreBuscado} — {nombreProvincia}"
+    encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
+    nombreArchivo = f"reporte-emergencia-{tipoSangreBuscado.replace('+','pos').replace('-','neg')}-{provincia}.html"
+    return generarHTML(titulo, encabezados, filas, nombreArchivo)
