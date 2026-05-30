@@ -8,6 +8,7 @@ from datetime import date, timedelta
 #Datos aleatorios
 fake = Faker('es_MX')
 archivoDonadores = "datos/donadores.pkl"
+archivoLugares = "datos/lugares.pkl"
 
 #Variables Globales
 nombresProvincias = {
@@ -50,6 +51,25 @@ justificaciones = {
 }
 
 #Funciones para la base de datos
+
+
+def cargarLugares(lugaresPorDefecto):
+    try:
+        with open(archivoLugares, "rb") as archivo:
+            return pickle.load(archivo)
+    except FileNotFoundError:
+        return lugaresPorDefecto  # Si no existe el archivo, usa los predeterminados
+    except PermissionError:
+        print("El archivo de lugares está abierto, ciérrelo e intente de nuevo")
+        return lugaresPorDefecto
+
+def guardarLugares(lugaresDonacion):
+    try:
+        with open(archivoLugares, "wb") as archivo:
+            pickle.dump(lugaresDonacion, archivo)
+    except PermissionError:
+        print("No se pudo guardar el archivo de lugares")
+
 def cargarDonadores():
     try:
         with open(archivoDonadores, "rb") as archivo:
