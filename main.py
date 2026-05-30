@@ -289,7 +289,7 @@ def eliminarDonador(ventanaPrincipal, donadores):
 
 #Opcion 5
 def insertarLugar(provinciaVar, entryLugar, labelMensaje):
-    codigo    = provinciaVar.get().split(" - ")[0]  # obtiene el "1", "2", etc
+    codigo    = provinciaVar.get().split(" - ")[0]  # obtiene el "1", "2"
     nuevoLugar = entryLugar.get().strip()
     if not nuevoLugar:
         labelMensaje.config(text="Debe ingresar un lugar", fg="red")
@@ -322,12 +322,39 @@ def insertarLugarDonacion(ventanaPrincipal):
     tk.Button(ventana, text="Salir", width=12, command=ventana.destroy).grid(row=3, column=1, padx=10, pady=10)
     
 #Opcion 6
+#Provincia
+def generarReporteProvincia(provinciaVar, ventana, donadores, nombresProvincias):
+    provincia = provinciaVar.get().split(" - ")[0]
+    resultado = reportes.reporteDonantesporProvincia(donadores, tiposSangre, provincia, nombresProvincias)
+    if resultado:
+        messagebox.showinfo("Éxito", "¡Reporte creado exitosamente!")
+    else:
+        messagebox.showerror("Error", "Reporte no creado")
+
+def ventanaReporteProvincia(ventanaPadre, donadores, nombresProvincias):
+    ventana = tk.Toplevel(ventanaPadre)
+    ventana.title("Reporte - Donantes por Provincia")
+    ventana.geometry("350x150")
+    tk.Label(ventana, text="Seleccione la provincia:").pack(padx=10, pady=10)
+    opciones = []
+    for codigo, nombre in nombresProvincias.items():
+        opciones.append(f"{codigo} - {nombre}")
+
+    provinciaVar = tk.StringVar(value=opciones[0])
+    tk.OptionMenu(ventana, provinciaVar, *opciones).pack(padx=10, pady=5)
+
+    tk.Button(ventana, text="Generar reporte", width=15,
+        command=lambda: generarReporteProvincia(provinciaVar, ventana, donadores, nombresProvincias)
+    ).pack(pady=5)
+    tk.Button(ventana, text="Regresar", width=15, command=ventana.destroy).pack(pady=5)
+
+#Menu de reportes
 def ventanaReportes(ventanaPadre, donadores):
     ventana = tk.Toplevel(ventanaPadre)
     ventana.title("Reportes")
     ventana.geometry("300x450")
     tk.Label(ventana, text="Reportes", font=("Arial", 12, "bold")).pack(pady=10)
-    tk.Button(ventana, text="1. Donantes por provincia",      width=30).pack(pady=5)
+    tk.Button(ventana, text="1. Donantes por provincia",      width=30, command=lambda: ventanaReporteProvincia(ventana, donadores, nombresProvincias)).pack(pady=5)
     tk.Button(ventana, text="2. Por rango de edad",           width=30).pack(pady=5)
     tk.Button(ventana, text="3. Por tipo de sangre",          width=30).pack(pady=5)
     tk.Button(ventana, text="4. Lista completa de donadores", width=30).pack(pady=5)

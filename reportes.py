@@ -38,3 +38,23 @@ def generarHTML(titulo, encabezados, filas, nombreArchivo):
     except:
         return False
 
+#Reporte 1
+def reporteDonantesporProvincia(donadores, tiposSangre, provincia, nombresProvincias):
+    # Filtrar donadores activos de la provincia seleccionada
+    resultado = []
+    for donador in donadores:
+        if donador[8] == 1 and donador[1][0] == provincia:
+            resultado.append(donador)
+    # Ordenar por nombre completo
+    resultado.sort(key=lambda donador: donador[0][0] + donador[0][1] + donador[0][2])
+    # Construir filas
+    filas = []
+    for donador in resultado:
+        nombreCompleto = " ".join(donador[0])
+        dia, mes, anno = donador[4]
+        fechaNac = f"{dia:02d}/{mes:02d}/{anno}"
+        filas.append([donador[1], nombreCompleto, fechaNac, donador[7], donador[6]])
+    nombreProvincia = nombresProvincias.get(provincia, "desconocida")
+    titulo = f"Donantes por Provincia: {nombreProvincia}"
+    encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
+    return generarHTML(titulo, encabezados, filas, f"reporte-provincia-{provincia}.html")
