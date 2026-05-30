@@ -4,7 +4,6 @@ import funciones
 
 def generarHTML(titulo, encabezados, filas, nombreArchivo):
     ahora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
     filasHTML = ""
     for fila in filas:
         filasHTML += "<tr>"
@@ -31,7 +30,6 @@ def generarHTML(titulo, encabezados, filas, nombreArchivo):
     </table>
 </body>
 </html>"""
-
     try:
         with open(f"reportes/{nombreArchivo}", "w", encoding="utf-8") as archivo:
             archivo.write(html)
@@ -145,3 +143,53 @@ def reporteListaCompletaDonadores(donadores):
     titulo = "Lista Completa de Donadores — Día Mundial del Donante de Sangre (14 de junio)"
     encabezados = ["Cédula", "Nombre Completo", "Tipo de Sangre", "Fecha de Nacimiento", "Peso (kg)", "Sexo", "Teléfono", "Correo"]
     return generarHTML(titulo, encabezados, filas, "reporte-lista-completa.html")
+
+#Reportes 5
+def reporteMujeresONegativo(donadores):
+    hoy = date.today()
+    indiceONeg = funciones.tiposSangre.index("O-")
+    resultado = []
+    for donador in donadores:
+        if donador[8] != 1:
+            continue
+        if donador[3] != False:
+            continue
+        if donador[2] != indiceONeg:
+            continue
+        dia, mes, anno = donador[4]
+        edad = (hoy - date(anno, mes, dia)).days // 365
+        if edad >= 45:
+            continue
+        resultado.append((donador, edad))
+    resultado.sort(key=lambda x: x[1])
+    filas = []
+    for donador, edad in resultado:
+        nombreCompleto = " ".join(donador[0])
+        dia, mes, anno = donador[4]
+        fechaNac = f"{dia:02d}/{mes:02d}/{anno}"
+        filas.append([donador[1], nombreCompleto, fechaNac, donador[7], donador[6]])
+    titulo = "Mujeres Donantes O- Menores de 45 Años"
+    encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
+    return generarHTML(titulo, encabezados, filas, "reporte-mujeres-onegativo.html")
+
+#reportes 6
+def reporteAQuienPuedeDonor(donadores, tipoSangreBuscado):
+    puedeDonarA = funciones.compatibilidadDonacion[tipoSangreBuscado]
+    indicesCompatibles = [funciones.tiposSangre.index(t) for t in puedeDonarA]
+    resultado = []
+    for donador in donadores:
+        if donador[8] != 1:
+            continue
+        if donador[2] not in indicesCompatibles:
+            continue
+        resultado.append(donador)
+    resultado.sort(key=lambda d: d[1][0])  # ordena por provincia ascendente
+    filas = []
+    for donador in resultado:
+        nombreCompleto = " ".join(donador[0])
+        tipoSangre = funciones.tiposSangre[donador[2]]
+        filas.append([donador[1], nombreCompleto, tipoSangre, donador[7], donador[6]])
+    titulo = f"¿A quién puede donar? — Tipo de sangre {tipoSangreBuscado}"
+    encabezados = ["Cédula", "Nombre Completo", "Tipo de Sangre", "Teléfono", "Correo"]
+    nombreArchivo = f"reporte-puede-donar-a-{tipoSangreBuscado.replace('+','pos').replace('-','neg')}.html"
+    return generarHTML(titulo, encabezados, filas, nombreArchivo)

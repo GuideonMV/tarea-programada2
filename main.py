@@ -417,6 +417,37 @@ def generarReporteListaCompleta(donadores):
         messagebox.showinfo("Éxito", "¡Reporte generado exitosamente!")
     else:
         messagebox.showerror("Error", "Reporte no creado")
+# Reporte 5
+def generarReporteMujeresONegativo(donadores):
+    resultado = reportes.reporteMujeresONegativo(donadores)
+    if resultado:
+        messagebox.showinfo("Éxito", "¡Reporte generado exitosamente!")
+    else:
+        messagebox.showerror("Error", "Reporte no creado")
+#Reporte 6
+def generarReporteAQuienPuedeDonor(tipoSangreVar, donadores):
+    tipoSangre = tipoSangreVar.get()
+    resultado = reportes.reporteAQuienPuedeDonor(donadores, tipoSangre)
+    if resultado:
+        messagebox.showinfo("Éxito", "¡Reporte generado exitosamente!")
+    else:
+        messagebox.showerror("Error", "Reporte no creado")
+
+def ventanaReporteAQuienPuedeDonor(ventanaPadre, donadores):
+    ventana = tk.Toplevel(ventanaPadre)
+    ventana.title("Reporte - ¿A quién puede donar?")
+    ventana.geometry("350x150")
+    tk.Label(ventana, text="Tipo de sangre:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    tipoSangreVar = tk.StringVar(value=funciones.tiposSangre[0])
+    tk.OptionMenu(ventana, tipoSangreVar, *funciones.tiposSangre).grid(row=0, column=1, padx=10, pady=10, sticky="w")
+    frameBotones = tk.Frame(ventana)
+    frameBotones.grid(row=1, column=0, columnspan=2, pady=15)
+    tk.Button(frameBotones, text="Generar reporte", width=15,
+        command=lambda: generarReporteAQuienPuedeDonor(tipoSangreVar, donadores)
+    ).grid(row=0, column=0, padx=10)
+    tk.Button(frameBotones, text="Regresar", width=15,
+        command=ventana.destroy
+    ).grid(row=0, column=1, padx=10)
 
 #Menu de reportes
 def ventanaReportes(ventanaPadre, donadores):
@@ -428,8 +459,8 @@ def ventanaReportes(ventanaPadre, donadores):
     tk.Button(ventana, text="2. Por rango de edad", width=30, command=lambda: ventanaReporteRangoEdad(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="3. Por tipo de sangre",          width=30, command=lambda: ventanaReporteEmergencia(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="4. Lista completa de donadores", width=30, command=lambda: generarReporteListaCompleta(donadores)).pack(pady=5)
-    tk.Button(ventana, text="5. Mujeres donantes O-",         width=30).pack(pady=5)
-    tk.Button(ventana, text="6. ¿A quién puede donar?",       width=30).pack(pady=5)
+    tk.Button(ventana, text="5. Mujeres donantes O-",         width=30, command=lambda: generarReporteMujeresONegativo(donadores)).pack(pady=5)
+    tk.Button(ventana, text="6. ¿A quién puede donar?",       width=30, command=lambda: ventanaReporteAQuienPuedeDonor(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="7. ¿De quién puede recibir?",    width=30).pack(pady=5)
     tk.Button(ventana, text="8. Donantes no activos",         width=30).pack(pady=5)
     tk.Button(ventana, text="9. Lugares de donación",         width=30).pack(pady=5)
