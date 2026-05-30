@@ -3,6 +3,7 @@ import re
 from datetime import date
 import random
 from faker import Faker
+
 #Datos aleatorios
 fake = Faker('es_MX')
 archivoDonadores = "datos/donadores.pkl"
@@ -23,7 +24,7 @@ justificaciones = {
     7: "Situaciones Específicas: Embarazo, lactancia o menstruación."
 }
 
-
+#Funciones para la base de datos
 def cargarDonadores():
     try:
         with open(archivoDonadores, "rb") as archivo:
@@ -41,6 +42,7 @@ def guardarDonadores(donadores):
     except PermissionError:
         print("No se pudo guardar el archivo debido a que está abierto")
 
+#Funciones para validar
 def validarCedula(cedula):
     patron = r'^[1-9]-\d{4}-\d{4}$'
     return bool(re.match(patron, cedula))
@@ -51,13 +53,7 @@ def validarFecha(fecha):
         return False
     try:
         dia, mes, anno = map(int, fecha.split("/"))
-        fechaNacimiento = date(anno, mes, dia)
-        hoy = date.today()
-        if fechaNacimiento >= hoy:
-            return False 
-        edad = (hoy - fechaNacimiento).days // 365
-        if edad < 18:
-            return False 
+        date(anno, mes, dia)
         return True
     except ValueError:
         return False
@@ -83,10 +79,33 @@ def cedulaExiste(cedula, donadores):
             return True
     return False
 
+def validarNombre(nombre):
+    partes = nombre.strip().split()
+    return len(partes) >= 3
+
+def validarEdad(fecha):
+    dia, mes, anno = map(int, fecha.split("/"))
+    hoy = date.today()
+    edad = (hoy - date(anno, mes, dia)).days // 365
+    return edad >= 18
+
+def validarProvincia(cedula, lugaresDonacion):
+    provincia = cedula[0] if cedula[0] != "8" else "1"
+    lugares = lugaresDonacion.get(provincia, [])
+    nombreProvincia = nombresProvincias.get(provincia, "desconocida")
+    return f"Dado que usted nació en la provincia de: {nombreProvincia}, usted podría donar en: {', '.join(lugares)}."
+
+def validarPeso(peso):
+    peso = float(peso)
+    if peso <= 50:
+        return "Usted debe pesar más de 50 kgms para poder ser donador"
+    elif peso >= 120:
+        return "Dado su sobre peso, no es posible donar sangre"
+    return "Usted posee un peso adecuado, correcto para ser donador de sangre"
+
+#Funciones para ingresar donadores (op #1)
 def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2, tipoSangre, sexo, dia, mes, anno, peso, correo, telefono):
-    
     indiceTipo = tiposSangre.index(tipoSangre)
-    
     nuevoDonador = [
         [nombre, apellido1, apellido2],
         cedula,                         
@@ -99,13 +118,8 @@ def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2
         1,                               
         0                                
     ]
-    
     donadores.append(nuevoDonador)
     return donadores
-
-def validarNombre(nombre):
-    partes = nombre.strip().split()
-    return len(partes) >= 3
 
 def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
     if not validarCedula(cedula):
@@ -122,43 +136,11 @@ def validarDonador(cedula, nombre, fecha, telefono, correo, peso, donadores):
         return "Peso inválido. Debe ser mayor a 50 y menor a 120"
     if cedulaExiste(cedula, donadores):
         return "Esta cédula ya está registrada"
+    if not validarEdad(fecha):
+        return "El donador debe ser mayor de 18 años"
     return None
 
-def validarDonadorActualizar(cedula, nombre, fecha, telefono, correo, peso):
-    if not validarNombre(nombre):
-        return "Ingrese nombre y dos apellidos"
-    if not validarFecha(fecha):
-        return "Fecha inválida o el donador debe ser mayor de 18 años. Formato: DD/MM/AAAA"
-    if not validarTelefono(telefono):
-        return "Teléfono inválido. Formato: ####-####"
-    if not validarCorreo(correo):
-        return "Correo inválido"
-    if not validarPeso(peso):
-        return "Peso inválido. Debe ser mayor a 50 y menor a 120"
-    return None
-
-def mensajeEdad(fecha):
-    hoy = date.today()
-    dia, mes, anno = fecha
-    edad = (hoy - date(anno, mes, dia)).days // 365
-    if edad >= 18:
-        return "Dado su fecha de nacimiento usted ya puede ser donador"
-    return "Dado su fecha de nacimiento usted aún no puede ser donador"
-
-def mensajeProvincia(cedula, lugaresDonacion):
-    provincia = cedula[0] if cedula[0] != "8" else "1"
-    lugares = lugaresDonacion.get(provincia, [])
-    nombreProvincia = nombresProvincias.get(provincia, "desconocida")
-    return f"Dado que usted nació en la provincia de: {nombreProvincia}, usted podría donar en: {', '.join(lugares)}."
-def mensajePeso(peso):
-    peso = float(peso)
-    if peso <= 50:
-        return "Usted debe pesar más de 50 kgms para poder ser donador"
-    elif peso >= 120:
-        return "Dado su sobre peso, no es posible donar sangre"
-    return "Usted posee un peso adecuado, correcto para ser donador de sangre"
-
-def mensajeTipoSangre(tipoSangre):
+def recomendarTipoSangre(tipoSangre):
     infoSangre = {
         "A+": "Se recomienda donar sangre entera y plaquetas.",
         "A-": "Se recomienda donar sangre entera y glóbulos rojos dobles.",
@@ -171,23 +153,24 @@ def mensajeTipoSangre(tipoSangre):
     }
     return f"Dado su tipo de sangre {tipoSangre}: {infoSangre[tipoSangre]}"
 
-def mensajeVideoSangreA(tipoSangre):
+def recomendarVideoSangreA(tipoSangre):
     if tipoSangre in ("A+", "A-"):
         return "Recomendación: vea el video 'Particularidades de la sangre tipo A: Responde diferente al estrés según la ciencia'."
     return None
 
 def obtenerRealimentacion(cedula, fecha, peso, tipoSangre, lugaresDonacion):
     mensajes = [
-        mensajeEdad(fecha),
-        mensajeProvincia(cedula, lugaresDonacion),
-        mensajePeso(peso),
-        mensajeTipoSangre(tipoSangre),
+        validarEdad(fecha),
+        validarProvincia(cedula, lugaresDonacion),
+        validarPeso(peso),
+        recomendarTipoSangre(tipoSangre),
     ]
-    video = mensajeVideoSangreA(tipoSangre)
+    video = recomendarVideoSangreA(tipoSangre)
     if video:
         mensajes.append(video)
     return mensajes
 
+#Funciones para generar de forma aleatoria
 def generarCedula():
     provincia = str(random.randint(1, 8))
     tomo = str(random.randint(1000, 9999))
@@ -201,7 +184,6 @@ def generarCorreo(nombre):
 
 def generarTelefono():
     return f"{random.choice([2,4,6,7,8])}{random.randint(100,999)}-{random.randint(1000,9999)}"
-
 def determinarEstado(peso, anno):
     if peso <= 50 or peso >= 120:
         return 0, 3
@@ -209,7 +191,7 @@ def determinarEstado(peso, anno):
         return 0, 1
     else:
         return 1, 0
-
+#Funciones para generar donadores de manera masiva (op#2)
 def crearDonador(tiposSangre):
     nombre   = fake.first_name()
     apellido1 = fake.last_name()
@@ -224,11 +206,8 @@ def crearDonador(tiposSangre):
     correo   = generarCorreo(nombre)
     telefono = generarTelefono()
     estado, justificacion = determinarEstado(peso, anno)
-
     return [
-        [nombre, apellido1, apellido2],
-        cedula,
-        tiposSangre.index(tipoSangre),
+        [nombre, apellido1, apellido2], cedula, tiposSangre.index(tipoSangre),
         sexo,
         (dia, mes, anno),
         float(peso),
@@ -245,11 +224,27 @@ def generarDonadores(donadores, tiposSangre, cantidad):
             donadores.append(donador)
     return donadores
 
+#Funiones para actualizar donadores (op#3)
 def buscarDonador(cedula, donadores):
     for i, donador in enumerate(donadores):
         if donador[1] == cedula:
             return i
     return -1
+
+def validarDonadorActualizar(cedula, nombre, fecha, telefono, correo, peso):
+    if not validarNombre(nombre):
+        return "Ingrese nombre y dos apellidos"
+    if not validarFecha(fecha):
+        return "Fecha inválida. Formato: DD/MM/AAAA"
+    if not validarEdad(fecha):
+        return "El donador debe ser mayor de 18 años"
+    if not validarTelefono(telefono):
+        return "Teléfono inválido. Formato: ####-####"
+    if not validarCorreo(correo):
+        return "Correo inválido"
+    if not validarPeso(peso):
+        return "Peso inválido. Debe ser mayor a 50 y menor a 120"
+    return None
 
 def actualizarDonador(donadores, tiposSangre, indice, nombre, apellido1, apellido2, tipoSangre, sexo, dia, mes, anno, peso, correo, telefono):
     indiceTipo = tiposSangre.index(tipoSangre)
@@ -262,6 +257,7 @@ def actualizarDonador(donadores, tiposSangre, indice, nombre, apellido1, apellid
     donadores[indice][7] = telefono
     return donadores
 
+#Funciones para eliminar donador (op#4)
 def eliminarDonador(cedula, donadores, justificacion):
     for donador in donadores:
         if donador[1] == cedula:

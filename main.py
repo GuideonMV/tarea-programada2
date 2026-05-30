@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import funciones
 import pickle
+import reportes
 
 #Variables Globales
 tiposSangre = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
@@ -288,17 +289,14 @@ def eliminarDonador(ventanaPrincipal, donadores):
 
 #Opcion 5
 def insertarLugar(provinciaVar, entryLugar, labelMensaje):
-    codigo    = provinciaVar.get().split(" - ")[0]  # obtiene el "1", "2", etc.
+    codigo    = provinciaVar.get().split(" - ")[0]  # obtiene el "1", "2", etc
     nuevoLugar = entryLugar.get().strip()
-
     if not nuevoLugar:
         labelMensaje.config(text="Debe ingresar un lugar", fg="red")
         return
-
     if nuevoLugar in lugaresDonacion[codigo]:
         labelMensaje.config(text="Ese lugar ya está registrado en esa provincia", fg="red")
         return
-
     lugaresDonacion[codigo].append(nuevoLugar)
     entryLugar.delete(0, tk.END)
     labelMensaje.config(text="¡Lugar insertado exitosamente!", fg="green")
@@ -307,27 +305,38 @@ def insertarLugarDonacion(ventanaPrincipal):
     ventana = tk.Toplevel(ventanaPrincipal)
     ventana.title("Insertar Lugar de Donación")
     ventana.geometry("400x220")
-
     opciones = []
     for codigo, nombre in nombresProvincias.items():
         opciones.append(f"{codigo} - {nombre}")
-
     tk.Label(ventana, text="Provincia:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
     provinciaVar = tk.StringVar(value=opciones[0])
     tk.OptionMenu(ventana, provinciaVar, *opciones).grid(row=0, column=1, padx=10, pady=10, sticky="w")
-
     tk.Label(ventana, text="Nuevo lugar:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
     entryLugar = tk.Entry(ventana, width=35)
     entryLugar.grid(row=1, column=1, padx=10, pady=10)
-
     labelMensaje = tk.Label(ventana, text="", font=("Arial", 9))
     labelMensaje.grid(row=2, column=0, columnspan=2, pady=5)
-
     tk.Button(ventana, text="Insertar", width=12,
         command=lambda: insertarLugar(provinciaVar, entryLugar, labelMensaje)
     ).grid(row=3, column=0, padx=10, pady=10)
     tk.Button(ventana, text="Salir", width=12, command=ventana.destroy).grid(row=3, column=1, padx=10, pady=10)
-
+    
+#Opcion 6
+def ventanaReportes(ventanaPadre, donadores):
+    ventana = tk.Toplevel(ventanaPadre)
+    ventana.title("Reportes")
+    ventana.geometry("300x450")
+    tk.Label(ventana, text="Reportes", font=("Arial", 12, "bold")).pack(pady=10)
+    tk.Button(ventana, text="1. Donantes por provincia",      width=30).pack(pady=5)
+    tk.Button(ventana, text="2. Por rango de edad",           width=30).pack(pady=5)
+    tk.Button(ventana, text="3. Por tipo de sangre",          width=30).pack(pady=5)
+    tk.Button(ventana, text="4. Lista completa de donadores", width=30).pack(pady=5)
+    tk.Button(ventana, text="5. Mujeres donantes O-",         width=30).pack(pady=5)
+    tk.Button(ventana, text="6. ¿A quién puede donar?",       width=30).pack(pady=5)
+    tk.Button(ventana, text="7. ¿De quién puede recibir?",    width=30).pack(pady=5)
+    tk.Button(ventana, text="8. Donantes no activos",         width=30).pack(pady=5)
+    tk.Button(ventana, text="9. Lugares de donación",         width=30).pack(pady=5)
+    tk.Button(ventana, text="Regresar", width=30, command=ventana.destroy).pack(pady=5)
 
 #Ventana Principal
 def ventanaPrincipal():
@@ -336,15 +345,17 @@ def ventanaPrincipal():
     ventana.title("Banco de Sangre - TEC") #Le ponemos titulo a la ventana
     ventana.geometry("300x400") #Definimos el tamaño de la ventana
     tk.Label(ventana, text="Sistema de Donación de Sangre", font=("Arial", 12, "bold")).pack(pady=10) #Título que ve el usuario, utilizamos "Label" solo para mostrar texto
+    # Si hay donadores activa todos, si no solo 1, 2, 5 y 7
+    estado = "normal" if len(donadores) > 0 else "disabled"
     #Botones para que el usuario pueda interactuar
     tk.Button(ventana, text="1. Insertar donador",             width=30, command=lambda: insertarDonador(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="2. Generar donadores",            width=30, command=lambda: generarDonadores(ventana, donadores)).pack(pady=5)
-    tk.Button(ventana, text="3. Actualizar datos del donador", width=30, command=lambda: actualizarDonador(ventana, donadores)).pack(pady=5)
-    tk.Button(ventana, text="4. Eliminar donador",             width=30, command=lambda: eliminarDonador(ventana, donadores)).pack(pady=5)
+    tk.Button(ventana, text="3. Actualizar datos del donador", width=30, state=estado, command=lambda: actualizarDonador(ventana, donadores)).pack(pady=5)
+    tk.Button(ventana, text="4. Eliminar donador",             width=30, state=estado, command=lambda: eliminarDonador(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="5. Insertar lugar de donación",   width=30, command=lambda: insertarLugarDonacion(ventana)).pack(pady=5)
-    tk.Button(ventana, text="6. Reportes",                     width=30).pack(pady=5)
+    tk.Button(ventana, text="6. Reportes",                     width=30, state=estado, command=lambda: ventanaReportes(ventana, donadores)).pack(pady=5)
     tk.Button(ventana, text="7. Salir",                        width=30, command=lambda: salir(ventana)).pack(pady=5)
     #Mantiene la ventana abierta
-    ventana.mainloop()
+    ventana.mainloop() 
 
 ventanaPrincipal()
