@@ -7,9 +7,11 @@ from datetime import date, timedelta
 
 #Datos aleatorios
 fake = Faker('es_MX')
-archivoDonadores = "datos/donadores.pkl"
 
 #Variables Globales
+archivoDonadores = "datos/donadores.pkl"
+
+archivoLugares = "datos/lugares.pkl"
 
 nombresProvincias = {
     "1": "San José", "2": "Alajuela", "3": "Cartago",
@@ -79,6 +81,35 @@ def guardarDonadores(donadores):
             pickle.dump(donadores, archivo)
     except PermissionError:
         print("No se pudo guardar el archivo debido a que está abierto")
+        
+def cargarLugares(lugaresPorDefecto):
+    """Funcionamiento: Carga el diccionario de lugares de donación desde el archivo binario .pkl usando pickle.
+    Entradas:
+        (dict) lugaresPorDefecto: diccionario con los lugares iniciales, usado si el archivo no existe
+    Salidas:
+        (dict) lugaresDonacion: diccionario cargado desde archivo, o lugaresPorDefecto si no existe el archivo
+    """
+    try:
+        with open(archivoLugares, "rb") as archivo:
+            return pickle.load(archivo)
+    except FileNotFoundError:
+        return lugaresPorDefecto  # Si no existe el archivo, usa los predeterminados
+    except PermissionError:
+        print("El archivo de lugares está abierto, ciérrelo e intente de nuevo")
+        return lugaresPorDefecto
+
+def guardarLugares(lugaresDonacion):
+    """Funcionamiento: Guarda el diccionario de lugares de donación en el archivo binario .pkl usando pickle.
+    Entradas:
+        (dict) lugaresDonacion: diccionario con los lugares de donación a guardar
+    Salidas:
+        Ninguna (escribe directamente en el archivo)
+    """
+    try:
+        with open(archivoLugares, "wb") as archivo:
+            pickle.dump(lugaresDonacion, archivo)
+    except PermissionError:
+        print("No se pudo guardar el archivo de lugares")
 
 #Funciones para validar
 def validarCedula(cedula):
@@ -189,7 +220,7 @@ def validarProvincia(cedula, lugaresDonacion):
     nombreProvincia = nombresProvincias.get(provincia, "desconocida")
     return f"Dado que usted nació en la provincia de: {nombreProvincia}, usted podría donar en: {', '.join(lugares)}."
 
-def validarPeso(peso):
+def enviarMenPeso(peso):
     """Funcionamiento: Retorna un mensaje informativo según el peso del donador.
     Entradas:
         (float) peso: peso del donador en kilogramos
@@ -202,6 +233,15 @@ def validarPeso(peso):
     elif peso >= 120:
         return "Dado su sobre peso, no es posible donar sangre"
     return "Usted posee un peso adecuado, correcto para ser donador de sangre"
+
+def enviarMenEdad(fecha):
+    dia, mes, anno = map(int, fecha.split("/"))
+    hoy = date.today()
+    edad = (hoy - date(anno, mes, dia)).days // 365
+    if edad >= 18:
+        return "Dado su fecha de nacimiento usted ya puede ser donador."
+    return "Dado su fecha de nacimiento usted aún no puede ser donador."
+
 
 #Funciones para ingresar donadores (op #1)
 def insertarDonador(donadores, tiposSangre, cedula, nombre, apellido1, apellido2, tipoSangre, sexo, dia, mes, anno, peso, correo, telefono):
@@ -299,7 +339,7 @@ def obtenerRealimentacion(cedula, fecha, peso, tipoSangre, lugaresDonacion):
     Salidas:
         (list) mensajes: lista de strings con la retroalimentación personalizada
     """
-    mensajes = [validarEdad(fecha), validarProvincia(cedula, lugaresDonacion), validarPeso(peso), recomendarTipoSangre(tipoSangre)]
+    mensajes = [enviarMenEdad(fecha), validarProvincia(cedula, lugaresDonacion), enviarMenPeso(peso), recomendarTipoSangre(tipoSangre)]
     video = recomendarVideoSangreA(tipoSangre)
     if video:
         mensajes.append(video)  
@@ -373,7 +413,7 @@ def crearDonador(tiposSangre):
     dia      = random.randint(1, 28) # Máximo 28 para evitar días inválidos en todos los meses
     mes      = random.randint(1, 12)
     anno     = random.randint(1950, 2010)
-    peso     = round(random.uniform(40, 130), 1)
+    peso     = round(random.uniform(50, 130), 1)
     correo   = generarCorreo(nombre)
     telefono = generarTelefono()
     estado, justificacion = determinarEstado(peso, anno)
@@ -479,4 +519,3 @@ def eliminarDonador(cedula, donadores, justificacion):
             donador[9] = justificacion # Guarda el código de justificación
             return True
     return False
-

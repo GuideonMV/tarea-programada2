@@ -13,7 +13,7 @@ def generarHTML(titulo, encabezados, filas, nombreArchivo):
         titulo (str): Título del reporte que aparece como <h1> en el HTML.
         encabezados (list[str]): Lista con los nombres de las columnas de la tabla.
         filas (list[list]): Lista de filas; cada fila es una lista de valores para cada columna.
-        nombreArchivo (str): Nombre del archivo HTML a crear (ej: "reporte_provincia_1.html").
+        nombreArchivo (str): Nombre del archivo HTML a crear (ej: "reporte-provincia-1.html").
     Salidas:
         Retorna True si el archivo se creó correctamente, False si ocurrió algún error.
     """
@@ -62,7 +62,7 @@ def reporteDonantesporProvincia(donadores, tiposSangre, provincia, nombresProvin
         nombresProvincias(dict): Diccionario de código → nombre de provincia.
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_provincia_{provincia}.html
+        Genera el archivo: reportes/reporte-provincia-{provincia}.html
     """
     # Filtrar donadores activos de la provincia seleccionada
     resultado = []
@@ -81,7 +81,7 @@ def reporteDonantesporProvincia(donadores, tiposSangre, provincia, nombresProvin
     nombreProvincia = nombresProvincias.get(provincia, "desconocida")
     titulo = f"Donantes por Provincia: {nombreProvincia}"
     encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
-    return generarHTML(titulo, encabezados, filas, f"reporte_provincia_{provincia}.html")
+    return generarHTML(titulo, encabezados, filas, f"reporte-provincia-{provincia}.html")
 
 #Reporte 2
 def reportePorRangoEdad(donadores, edadInicial, edadFinal):
@@ -94,7 +94,7 @@ def reportePorRangoEdad(donadores, edadInicial, edadFinal):
         edadFinal (int | None): Edad máxima del rango. Si es None, no hay límite superior.
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_rango_edad.html
+        Genera el archivo: reportes/reporte-rango-edad.html
     """
     hoy = date.today()
     resultado = []
@@ -116,7 +116,7 @@ def reportePorRangoEdad(donadores, edadInicial, edadFinal):
         filas.append([donador[1], nombreCompleto, fechaNac, donador[7], donador[6]])
     titulo = "Donantes por Rango de Edad"
     encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
-    return generarHTML(titulo, encabezados, filas, "reporte_rango_edad.html")
+    return generarHTML(titulo, encabezados, filas, "reporte-rango-edad.html")
 
 def validarEdadReporte(edadInicial, edadFinal):
     """
@@ -152,7 +152,7 @@ def reporteEmergenciaTipoSangre(donadores, tipoSangreBuscado, provincia):
         provincia (str): Código de la provincia a filtrar.
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_emergencia_{tipo}_{provincia}.html
+        Genera el archivo: reportes/reporte-emergencia-{tipo}-{provincia}.html
     """
     hoy = date.today()
     indiceTipo = funciones.tiposSangre.index(tipoSangreBuscado) # Convierte el tipo de sangre en su índice numérico para comparar con donador[2]
@@ -179,7 +179,7 @@ def reporteEmergenciaTipoSangre(donadores, tipoSangreBuscado, provincia):
     nombreProvincia = funciones.nombresProvincias.get(provincia, "desconocida")
     titulo = f"Donantes en Emergencia — Tipo {tipoSangreBuscado} — {nombreProvincia}"
     encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
-    nombreArchivo = f"reporte_emergencia_{tipoSangreBuscado.replace('+','pos').replace('-','neg')}_{provincia}.html"
+    nombreArchivo = f"reporte-emergencia-{tipoSangreBuscado.replace('+','pos').replace('-','neg')}-{provincia}.html"
     return generarHTML(titulo, encabezados, filas, nombreArchivo)
 
 #Reporte 4
@@ -191,7 +191,7 @@ def reporteListaCompletaDonadores(donadores):
         donadores (list): Lista de donadores en memoria.
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_lista_completa.html
+        Genera el archivo: reportes/reporte-lista-completa.html
     """
     resultado = [d for d in donadores if d[8] == 1] # Filtra solo donadores activos y ordena por el primer dígito de la cédula (código de provincia)
     resultado.sort(key=lambda d: d[1][0])  # ordena por provincia (primer dígito de cédula)
@@ -205,7 +205,7 @@ def reporteListaCompletaDonadores(donadores):
         filas.append([donador[1], nombreCompleto, tipoSangre, fechaNac, donador[5], sexo, donador[7], donador[6]])
     titulo = "Lista Completa de Donadores — Día Mundial del Donante de Sangre (14 de junio)"
     encabezados = ["Cédula", "Nombre Completo", "Tipo de Sangre", "Fecha de Nacimiento", "Peso (kg)", "Sexo", "Teléfono", "Correo"]
-    return generarHTML(titulo, encabezados, filas, "reporte_lista_completa.html")
+    return generarHTML(titulo, encabezados, filas, "reporte-lista-completa.html")
 
 #Reporte 5
 def reporteMujeresONegativo(donadores):
@@ -216,7 +216,7 @@ def reporteMujeresONegativo(donadores):
         donadores (list): Lista de donadores en memoria.
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_mujeres_onegativo.html
+        Genera el archivo: reportes/reporte-mujeres-onegativo.html
     """
     hoy = date.today()
     indiceONeg = funciones.tiposSangre.index("O-")
@@ -242,7 +242,7 @@ def reporteMujeresONegativo(donadores):
         filas.append([donador[1], nombreCompleto, fechaNac, donador[7], donador[6]])
     titulo = "Mujeres Donantes O- Menores de 45 Años"
     encabezados = ["Cédula", "Nombre Completo", "Fecha de Nacimiento", "Teléfono", "Correo"]
-    return generarHTML(titulo, encabezados, filas, "reporte_mujeres_onegativo.html")
+    return generarHTML(titulo, encabezados, filas, "reporte-mujeres-onegativo.html")
 
 #Reporte 6
 
@@ -255,7 +255,7 @@ def reporteAQuienPuedeDonor(donadores, tipoSangreBuscado):
         tipoSangreBuscado (str):  Tipo de sangre receptor (ej: "A+").
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_puede_donar_a_{tipo}.html
+        Genera el archivo: reportes/reporte-puede-donar-a-{tipo}.html
     """
     puedeDonarA = funciones.compatibilidadDonacion[tipoSangreBuscado] # Obtiene los tipos de sangre que pueden donar al tipo buscado
     indicesCompatibles = [funciones.tiposSangre.index(t) for t in puedeDonarA]
@@ -274,7 +274,7 @@ def reporteAQuienPuedeDonor(donadores, tipoSangreBuscado):
         filas.append([donador[1], nombreCompleto, tipoSangre, donador[7], donador[6]])
     titulo = f"¿A quién puede donar? — Tipo de sangre {tipoSangreBuscado}"
     encabezados = ["Cédula", "Nombre Completo", "Tipo de Sangre", "Teléfono", "Correo"]
-    nombreArchivo = f"reporte_puede_donar_a_{tipoSangreBuscado.replace('+','pos').replace('-','neg')}.html"
+    nombreArchivo = f"reporte-puede-donar-a-{tipoSangreBuscado.replace('+','pos').replace('-','neg')}.html"
     return generarHTML(titulo, encabezados, filas, nombreArchivo)
 
 #Reporte 7
@@ -287,7 +287,7 @@ def reporteDeQuienPuedeRecibir(donadores, tipoSangreBuscado):
         tipoSangreBuscado (str): Tipo de sangre receptor (ej: "B-").
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_puede_recibir_de_{tipo}.html
+        Genera el archivo: reportes/reporte-puede-recibir-de-{tipo}.html
     """
     puedeRecibirDe = funciones.compatibilidadRecepcion[tipoSangreBuscado] # Obtiene los tipos de sangre de los que puede recibir el tipo buscado
     indicesCompatibles = [funciones.tiposSangre.index(t) for t in puedeRecibirDe]
@@ -306,7 +306,7 @@ def reporteDeQuienPuedeRecibir(donadores, tipoSangreBuscado):
         filas.append([donador[1], nombreCompleto, tipoSangre, donador[7], donador[6]])
     titulo = f"¿De quién puede recibir? — Tipo de sangre {tipoSangreBuscado}"
     encabezados = ["Cédula", "Nombre Completo", "Tipo de Sangre", "Teléfono", "Correo"]
-    nombreArchivo = f"reporte_puede_recibir_de_{tipoSangreBuscado.replace('+','pos').replace('-','neg')}.html"
+    nombreArchivo = f"reporte-puede-recibir-de-{tipoSangreBuscado.replace('+','pos').replace('-','neg')}.html"
     return generarHTML(titulo, encabezados, filas, nombreArchivo)
 
 #Reporte 8
@@ -318,7 +318,7 @@ def reporteDonantesNoActivos(donadores):
         donadores (list): Lista de donadores en memoria.
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_donantes_no_activos.html
+        Genera el archivo: reportes/reporte-donantes-no-activos.html
     """
     resultado = [d for d in donadores if d[8] == 0] # Filtra solo los donadores inactivos (estado == 0)
     resultado.sort(key=lambda d: d[9])  # Ordena por el código numérico de justificación (donador[9])
@@ -333,7 +333,7 @@ def reporteDonantesNoActivos(donadores):
         filas.append([justificacion, donador[1], nombreCompleto, tipoSangre, fechaNac, donador[5], sexo, donador[7], donador[6]])
     titulo = "Donantes No Activos"
     encabezados = ["Justificación", "Cédula", "Nombre Completo", "Tipo de Sangre", "Fecha de Nacimiento", "Peso (kg)", "Sexo", "Teléfono", "Correo"]
-    return generarHTML(titulo, encabezados, filas, "reporte_donantes_no_activos.html")
+    return generarHTML(titulo, encabezados, filas, "reporte-donantes-no-activos.html")
 
 #Reporte 9
 def reporteLugaresDonacion(donadores, lugaresDonacion):
@@ -342,17 +342,17 @@ def reporteLugaresDonacion(donadores, lugaresDonacion):
     disponibles en cada provincia, ordenadas por código ascendente.
     Entradas:
         donadores (list): Lista de donadores en memoria.
-        lugaresDonacion(dict): Diccionario de código de provincia → lista de centros de donación.
+        lugaresDonacion (dict): Diccionario de código de provincia → lista de centros de donación.
     Salidas:
         Retorna True si el archivo HTML fue creado correctamente, False si ocurrió un error.
-        Genera el archivo: reportes/reporte_lugares_donacion.html
+        Genera el archivo: reportes/reporte-lugares-donacion.html
     """
     filas = []
-    for codigo, nombre in sorted(funciones.nombresProvincias.items()):  # Recorre las provincias en orden ascendente por su código
-        cantidad = sum(1 for d in donadores if d[1][0] == codigo) # Cuenta cuántos donadores (activos e inactivos) pertenecen a esta provincia
+    for codigo, nombre in sorted(funciones.nombresProvincias.items()):  # ascendente por código
+        cantidad = sum(1 for d in donadores if d[1][0] == codigo)
         lugares = lugaresDonacion.get(codigo, [])
-        lugaresStr = ", ".join(lugares) if lugares else "Sin recintos registrados" # Si no hay lugares registrados, muestra un mensaje indicativo
+        lugaresStr = ", ".join(lugares) if lugares else "Sin recintos registrados"
         filas.append([nombre, cantidad, lugaresStr])
     titulo = "Lugares de Donación por Provincia"
     encabezados = ["Provincia", "Cantidad de Donadores", "Recintos de Donación"]
-    return generarHTML(titulo, encabezados, filas, "reporte_lugares_donacion.html")
+    return generarHTML(titulo, encabezados, filas, "reporte-lugares-donacion.html")
